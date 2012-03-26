@@ -3,15 +3,17 @@
 class sheet{
 
     int width,height;
+    std::vector<double> pixels,old;
 
   public:
-
-    std::vector<double> pixels,old;
 
     sheet(int,int);
     ~sheet();
     int w()const;
     int h()const;
+    int size()const;
+    double& operator[](int);
+    const double& operator[](int)const;
     void compute();
 };
 

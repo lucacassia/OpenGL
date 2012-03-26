@@ -19,14 +19,13 @@ void GLInit()
 
 void displayF()
 {
-    float* data = NULL;
-    data = (float*)malloc(3*Sheet.w()*Sheet.h()*sizeof(float));
+    float* data = (float*)malloc(3*Sheet.size()*sizeof(float));
     if(data == NULL)
         std::cout<<"\n\nmalloc fail!!!\n\n";
-    for(int k=0;k<Sheet.w()*Sheet.h();k++){
-        data[3*k+0] = exp(-5000/Sheet.pixels[k]);
-        data[3*k+1] = exp(-5000/Sheet.pixels[k]);
-        data[3*k+2] = exp(-5000/Sheet.pixels[k]);
+    for(int k=0;k<Sheet.size();k++){
+        data[3*k+0] = exp(-5000/Sheet[k]);
+        data[3*k+1] = exp(-5000/Sheet[k]);
+        data[3*k+2] = exp(-5000/Sheet[k]);
     }
     glRasterPos2i(0,0);
     glDrawPixels(Sheet.w(),Sheet.h(),GL_RGB,GL_FLOAT,data);
