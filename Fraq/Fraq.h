@@ -8,24 +8,26 @@ class Fraq{
     double shift;
     int width;
     int height;
+    std::vector<double> pixels;
 
   public:
 
-    std::vector<short> pixels;
-
     Fraq();
     ~Fraq();
-    int W()const;
-    int H()const;
-    Fraq operator ++(int);
-    Fraq operator --(int);
+    int w() const;
+    int h() const;
+    int size() const;
+    double & operator [] (int);
+    const double & operator [] (int) const;
+    Fraq operator ++ (int);
+    Fraq operator -- (int);
     void left();
     void right();
     void up();
     void down();
     void resetView();
     void updateSize(int,int);
-    short innerLoop(int,int);
+    void innerLoop(int,int);
     void compute();
 };
 

@@ -1,10 +1,12 @@
 #include "sheet.h"
-
+#include <cmath>
 sheet::sheet(int w,int h)
 {
     width=w;
     height=h;
     pixels.resize(w*h);
+    for(int n=0; n<w*h; n++)
+        pixels[n]=(n%width-width/2)*(n%width-width/2)+(n/width-height/2)*(n/width-height/2);
     old=pixels;
     compute();
 }
@@ -39,9 +41,6 @@ void sheet::compute()
         }
         pixels[n]+=0.5*(env/8.0-old[n]);
     }
-    pixels[width/2]=1000000;
-    pixels[0]=1000000;
-    pixels[width-1]=1000000;
     old=pixels;
 }
 

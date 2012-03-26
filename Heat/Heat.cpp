@@ -5,9 +5,9 @@
 
 #define PI 3.141592654
 
-sheet Sheet(300,300);
+sheet Sheet(1000,500);
 int isActive=1;
-int n=5;
+int n=1;
 
 void GLInit()
 {
@@ -24,9 +24,9 @@ void displayF()
     if(data == NULL)
         std::cout<<"\n\nmalloc fail!!!\n\n";
     for(int k=0;k<Sheet.w()*Sheet.h();k++){
-        data[3*k+0] = exp(-5/Sheet.pixels[k]);
-        data[3*k+1] = exp(-5/Sheet.pixels[k]);
-        data[3*k+2] = exp(-5/Sheet.pixels[k]);
+        data[3*k+0] = exp(-5000/Sheet.pixels[k]);
+        data[3*k+1] = exp(-5000/Sheet.pixels[k]);
+        data[3*k+2] = exp(-5000/Sheet.pixels[k]);
     }
     glRasterPos2i(0,0);
     glDrawPixels(Sheet.w(),Sheet.h(),GL_RGB,GL_FLOAT,data);
@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
     glutCreateWindow("Heat"); 
     GLInit(); 
     glutDisplayFunc(displayF); 
-    glutIdleFunc(idleF); 
+    glutIdleFunc(idleF);
     glutKeyboardFunc(keyboardF);
     glutMainLoop();
     return 0;

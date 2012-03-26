@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-lglut -lGL -lGLU -lX11 -fopenmp -lm
+CFLAGS=-lglut -lGL -lGLU -lX11 -lpthread -lm
 SOURCES=../lib/complex.cc ../lib/Timer.cc Fraq.cc FRAQ.cpp
 OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE=fraq
