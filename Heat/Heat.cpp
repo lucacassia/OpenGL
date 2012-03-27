@@ -3,7 +3,7 @@
 #include <iostream>
 #include <GL/freeglut.h>
 
-sheet Sheet(500,500);
+sheet Sheet(1000,500);
 int isActive=1;
 
 void GLInit()

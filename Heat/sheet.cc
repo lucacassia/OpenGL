@@ -11,7 +11,10 @@ sheet::sheet(int w,int h)
     height=h;
     pixels.resize(w*h);
     for(int n=0;n<size();n++)
-        pixels[n] = rand()*1.0/RAND_MAX;
+        if(rand()%2)
+            pixels[n] = rand()*0.1/RAND_MAX;
+        else
+            pixels[n] = 0.9+rand()*0.1/RAND_MAX;
     old=pixels;
 }
 
