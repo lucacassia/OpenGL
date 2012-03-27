@@ -1,7 +1,7 @@
 #include <vector>
 
-class sheet{
-
+class sheet
+{
     int width,height;
     std::vector<double> pixels,old;
 
@@ -14,6 +14,7 @@ class sheet{
     int size()const;
     double& operator[](int);
     const double& operator[](int)const;
-    void compute();
+    double compute(int);
+    void operator++(int);
 };
 

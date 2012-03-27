@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-lglut -lGL -lGLU -lX11 -lm
+CFLAGS=-lglut -lGL -lGLU -lX11 -lm -lpthread
 SOURCES=../lib/complex.cc ../lib/Timer.cc sheet.cc Heat.cpp
 OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE=heat
