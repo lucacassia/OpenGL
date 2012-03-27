@@ -42,9 +42,9 @@ void idleF()
     glutPostRedisplay();
 }
 
-inline int toInt(double x)
+inline unsigned char toUb(double x)
 {
-    return int(255*(x+1)/2);
+    return (unsigned char)(255*(x+1)/2);
 }
 
 void saveToFile()
@@ -53,9 +53,9 @@ void saveToFile()
     fprintf(f, "P6\n%d %d\n255\n", fraq.w(), fraq.h());
     for(int k=0;k<fraq.size();k++){
         static unsigned char color[3];
-        color[0] = toInt(sin(fraq[k]*omega+phase[0]));
-        color[1] = toInt(sin(fraq[k]*omega+phase[1]));
-        color[2] = toInt(sin(fraq[k]*omega+phase[2]));
+        color[0] = toUb(sin(fraq[k]*omega+phase[0]));
+        color[1] = toUb(sin(fraq[k]*omega+phase[1]));
+        color[2] = toUb(sin(fraq[k]*omega+phase[2]));
         fwrite(color, 1, 3, f);
     }
     fclose(f);
