@@ -95,7 +95,7 @@ void Fraq::innerLoop(int i,int j)
     complex z(focus.Re()+(j+(1-width)/2)/zoom,focus.Im()+(i+(1-height)/2)/zoom);
     z = newComplex(1.0,0.0)/z;
     z = sinc(z)/cosc(z);
-    pixels[i*width+j] = 100*z.Mod();
+    pixels[i*width+j] = z.Mod();
 }
 
 void* thread0(void* arg)

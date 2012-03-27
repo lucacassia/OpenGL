@@ -14,6 +14,10 @@ class rgb_t
 rgb_t rgb_t::set(double x)
 {
     r = g = b = 0;
+    if(x<0)
+        x+=-int(x)+1;
+    if(x>=1)
+        x=x-int(x);
     if(0<= x && x<1.0/6.0){
         r = 0;
         g = 6*x;

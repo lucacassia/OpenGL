@@ -1,12 +1,11 @@
 #include "Fraq.h"
 #include <GL/freeglut.h>
-#include <cstdlib>
 #include <cstdio>
 #include <cmath>
 
 Fraq fraq;
 double phase[] = {0,Pi/3,2*Pi/3};
-double omega = Pi/100;
+double omega = Pi;
 
 void GLInit()
 {
@@ -20,7 +19,7 @@ void displayF()
 {
     float* data = (float*)malloc(3*fraq.size()*sizeof(float));
     if(data == NULL)
-        std::cout<<"\n\nmalloc fail!!!\n\n";
+        printf("\n\nmalloc fail!!!\n\n");
     for(int k=0;k<fraq.size();k++){
         data[3*k+0] = (sin(fraq[k]*omega+phase[0]));
         data[3*k+1] = (sin(fraq[k]*omega+phase[1]));
