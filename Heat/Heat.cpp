@@ -3,7 +3,7 @@
 #include <iostream>
 #include <GL/freeglut.h>
 
-sheet Sheet(1000,500);
+sheet Sheet(500,500);
 int isActive=1;
 
 void GLInit()
@@ -19,22 +19,25 @@ void displayF()
     float* data = (float*)malloc(3*Sheet.size()*sizeof(float));
     if(data == NULL)
         std::cout<<"\n\nmalloc fail!!!\n\n";
+
     for(int k=0;k<Sheet.size();k++){
-        rgb_t color(Sheet[k]);
-        data[3*k+0] = color.r;
-        data[3*k+1] = color.g;
-        data[3*k+2] = color.b;
+            rgb_t color(Sheet[k]);
+            data[3*k+0] = color.r;
+            data[3*k+1] = color.g;
+            data[3*k+2] = color.b;
     }
     glRasterPos2i(0,0);
     glDrawPixels(Sheet.w(),Sheet.h(),GL_RGB,GL_FLOAT,data);
     glutSwapBuffers();
+
     free(data);
 }
 
 void idleF()
 {
-    if(isActive)
+    if(isActive){
         Sheet++;
+    }
     glutPostRedisplay();
 }
 
