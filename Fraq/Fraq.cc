@@ -25,12 +25,12 @@ int Fraq::size() const
     return width*height;
 }
 
-double & Fraq::operator [] (int index)
+long double & Fraq::operator [] (int index)
 {
     return pixels[index];
 }
 
-const double & Fraq::operator [] (int index) const
+const long double & Fraq::operator [] (int index) const
 {
     return pixels[index];
 }
@@ -94,7 +94,7 @@ void Fraq::innerLoop(int i,int j)
 {
     complex z(focus.Re()+(j+(1-width)/2)/zoom,focus.Im()+(i+(1-height)/2)/zoom);
     z = newComplex(1.0,0.0)/z;
-    z = sinc(z)/cosc(z);
+    z = sinc(z)/z;
     pixels[i*width+j] = z.Mod();
 }
 

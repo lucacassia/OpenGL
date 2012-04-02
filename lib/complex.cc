@@ -131,15 +131,19 @@ complex newComplex(long double r,long double i)
     return tmp;
 }
 
-complex expc(complex z){
+complex expc(const complex& z){
     return newComplex(exp(z.Re())*cos(z.Im()),exp(z.Re())*sin(z.Im()));
 }
 
-complex cosc(complex z){
+complex cosc(const complex& z){
     return (newComplex(exp(-z.Im())*cos(z.Re()),exp(-z.Im())*sin(z.Re()))+newComplex(exp(z.Im())*cos(-z.Re()),exp(z.Im())*sin(-z.Re())))/newComplex(2.0,0.0);
 }
 
-complex sinc(complex z){
+complex sinc(const complex& z){
     return (newComplex(exp(-z.Im())*cos(z.Re()),exp(-z.Im())*sin(z.Re()))-newComplex(exp(z.Im())*cos(-z.Re()),exp(z.Im())*sin(-z.Re())))/newComplex(0.0,2.0);
+}
+
+complex tanc(const complex& z){
+    return sinc(z)/cosc(z);
 }
 

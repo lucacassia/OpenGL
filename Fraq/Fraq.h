@@ -4,11 +4,11 @@
 class Fraq{
 
     complex focus;
-    double zoom;
-    double shift;
+    long double zoom;
+    long double shift;
     int width;
     int height;
-    std::vector<double> pixels;
+    std::vector<long double> pixels;
 
   public:
 
@@ -17,8 +17,8 @@ class Fraq{
     int w() const;
     int h() const;
     int size() const;
-    double & operator [] (int);
-    const double & operator [] (int) const;
+    long double & operator [] (int);
+    const long double & operator [] (int) const;
     Fraq operator ++ (int);
     Fraq operator -- (int);
     void left();

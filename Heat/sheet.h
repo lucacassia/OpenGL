@@ -3,7 +3,7 @@
 class sheet
 {
     int width,height;
-    std::vector<double> pixels,old;
+    std::vector<double> pixels,old,source;
 
   public:
 

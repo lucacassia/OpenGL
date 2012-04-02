@@ -33,8 +33,9 @@ class complex
 };
 
 complex newComplex(long double=0,long double=0);
-complex expc(complex);
-complex cosc(complex);
-complex sinc(complex);
+complex expc(const complex&);
+complex cosc(const complex&);
+complex sinc(const complex&);
+complex tanc(const complex&);
 
 #endif
