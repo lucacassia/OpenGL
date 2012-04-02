@@ -1,6 +1,7 @@
 #include "sheet.h"
 #include "../lib/color.h"
 #include <iostream>
+#include <cmath>
 #include <GL/freeglut.h>
 
 sheet Sheet(500,500);
@@ -36,7 +37,7 @@ void displayF()
 void idleF()
 {
     if(isActive){
-        Sheet++;
+        Sheet--;
     }
     glutPostRedisplay();
 }
@@ -53,6 +54,19 @@ void keyboardF(unsigned char key, int mouseX, int mouseY)
     }
 }
 
+void mouseF(int button, int state, int x, int y)
+{
+    int viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    y = viewport[3]-y;
+    if((y<Sheet.h())&&(x<Sheet.w()))
+        if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+            for(int n=0;n<Sheet.size();n++){
+                double r=sqrt(((x-n%Sheet.w())*(x-n%Sheet.w())+(y-n/Sheet.w())*(y-n/Sheet.w())));
+                Sheet[n]+=exp(-r*r/sqrt(Sheet.size()));
+            }
+}
+
 int main(int argc, char *argv[])
 {
     glutInit(&argc, argv);
@@ -62,6 +76,7 @@ int main(int argc, char *argv[])
     GLInit();
     glutDisplayFunc(displayF); 
     glutIdleFunc(idleF);
+    glutMouseFunc(mouseF);
     glutKeyboardFunc(keyboardF);
     glutMainLoop();
     return 0;

@@ -1,6 +1,6 @@
 #include "sheet.h"
 #include <pthread.h>
-
+#include <cmath>
 #include <cstdlib>
 #include <ctime>
 
