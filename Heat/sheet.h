@@ -19,6 +19,7 @@ class sheet
     void operator++(int);
     double computex(int);
     void operator--(int);
+    sheet& operator =(const sheet&);
 
 };
 

@@ -35,6 +35,16 @@ sheet::sheet(const sheet& arg)
     old=pixels;    
 }
 
+sheet& sheet::operator =(const sheet& arg)
+{
+    width=arg.w();
+    height=arg.h();
+	pixels=arg.pixels;
+	source=arg.source;
+    old=pixels;
+    return *this;
+}
+
 sheet::~sheet(){}
 int sheet::w()const{return width;}
 int sheet::h()const{return height;}

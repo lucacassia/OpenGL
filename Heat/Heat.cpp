@@ -1,6 +1,7 @@
 #include "sheet.h"
 #include "../lib/color.h"
-#include <iostream>
+#include <cstdio>
+#include <cstring>
 #include <cmath>
 #include <GL/freeglut.h>
 
@@ -22,7 +23,7 @@ void displayF()
 {
     float* data = (float*)malloc((Sheet.size())*sizeof(float)*3);
     if(data == NULL)
-        std::cout<<"\n\nmalloc fail!!!\n\n";
+        printf("\n\nmalloc fail!!!\n\n");
 
     rgb_t color;
     for(int k=0;k<Sheet.size();k++){
@@ -86,9 +87,35 @@ void mouseF(int button, int state, int x, int y)
             }
 }
 
+sheet readFile(const char* path)
+{
+    FILE* file = fopen(path, "rb");
+    char buf[256];
+    unsigned int w, h, d;
+    fgets(buf, 256, file);
+    do{ fgets(buf, 256, file); }while ( strncmp(buf, "#", 1) == 0 );
+    sscanf(buf, "%u %u", &w, &h);
+    fscanf(file, "%u", &d);
+    fseek(file, 1, SEEK_CUR);
+ 
+    sheet img(w,h);
+    rgb_t color;
+    unsigned char cbuf[3];
+    for(int n=0;n<w*h;n++){
+        fread(cbuf, 1, 3, file);
+        color.r=cbuf[0]/255.0;
+        color.g=cbuf[1]/255.0;
+        color.b=cbuf[2]/255.0;
+        img[(h-1-n/w)*w+n%w]=rgb2d(color);
+    }
+    fclose(file);
+    return img;
+}
+
 int main(int argc, char *argv[])
 {
     glutInit(&argc, argv);
+    if(argc==2){Sheet=readFile(argv[1]);test=Sheet;}
     glutInitWindowSize(Sheet.w(),Sheet.h()); 
     glutInitDisplayMode( GLUT_RGB | GLUT_DOUBLE );
     glutCreateWindow("Heat"); 
