@@ -1,4 +1,5 @@
 #include "Fraq.h"
+#include "../lib/Timer.h"
 #include <GL/freeglut.h>
 #include <cstdio>
 #include <cmath>
@@ -17,6 +18,8 @@ void GLInit()
 
 void displayF()
 {
+    Timer timer;
+    timer.start();
     float* data = (float*)malloc(3*fraq.size()*sizeof(float));
     if(data == NULL)
         printf("\n\nmalloc fail!!!\n\n");
@@ -29,6 +32,8 @@ void displayF()
     glDrawPixels(fraq.w(),fraq.h(),GL_RGB,GL_FLOAT,data);
     glutSwapBuffers();
     free(data);
+    timer.stop();
+    std::cout<<"Display: "<<timer.getElapsedTime()<<std::endl;
 }
 
 void reshapeF(int w,int h)
@@ -36,10 +41,7 @@ void reshapeF(int w,int h)
     fraq.updateSize(w,h);
 }
 
-void idleF()
-{
-    glutPostRedisplay();
-}
+void idleF(){}
 
 inline unsigned char toUb(double x)
 {
@@ -111,6 +113,7 @@ void keyboardF(unsigned char key, int mouseX, int mouseY)
             phase[2]-=0.1;
             break;
     }
+    glutPostRedisplay();
 }
 
 void specialKeyF(int key, int x, int y)
@@ -133,6 +136,7 @@ void specialKeyF(int key, int x, int y)
             fraq.right();
             break;
     }
+    glutPostRedisplay();
 }
 
 int main(int argc, char *argv[])

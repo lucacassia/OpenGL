@@ -48,8 +48,8 @@ void idleF()
 {
     if(isActive){
         Sheet--;test++;
+        glutPostRedisplay();
     }
-    glutPostRedisplay();
 }
 
 void keyboardF(unsigned char key, int mouseX, int mouseY)
