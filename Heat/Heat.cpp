@@ -6,9 +6,7 @@
 #include <GL/freeglut.h>
 
 sheet Sheet(500,500);
-sheet test(Sheet);
 int isActive=1;
-int evoMode=1;
 
 void GLInit(bool fullscreen=false)
 {
@@ -27,12 +25,7 @@ void displayF()
 
     rgb_t color;
     for(int k=0;k<Sheet.size();k++){
-        if(evoMode==1)
-            color.set(Sheet[k]);
-        if(evoMode==2)
-            color.set(test[k]);
-        if(evoMode==3)
-            color.set((Sheet[k]-test[k])*(Sheet[k]-test[k]));
+        color.set(Sheet[k]);
         data[3*k+0] = color.r;
         data[3*k+1] = color.g;
         data[3*k+2] = color.b;
@@ -47,7 +40,7 @@ void displayF()
 void idleF()
 {
     if(isActive){
-        Sheet--;test++;
+        Sheet++;
         glutPostRedisplay();
     }
 }
@@ -60,15 +53,6 @@ void keyboardF(unsigned char key, int mouseX, int mouseY)
             exit(0);
         case ' ':
             isActive=!isActive;
-            break;
-        case '1':
-            evoMode=1;
-            break;
-        case '2':
-            evoMode=2;
-            break;
-        case '3':
-            evoMode=3;
             break;
     }
 }
@@ -83,7 +67,6 @@ void mouseF(int button, int state, int x, int y)
             for(int n=0;n<Sheet.size();n++){
                 double r=sqrt(((x-n%Sheet.w())*(x-n%Sheet.w())+(y-n/Sheet.w())*(y-n/Sheet.w())));
                 Sheet[n]+=exp(-r*r/sqrt(Sheet.size()));
-                test[n]+=exp(-r*r/sqrt(Sheet.size()));
             }
 }
 
@@ -115,7 +98,7 @@ sheet readFile(const char* path)
 int main(int argc, char *argv[])
 {
     glutInit(&argc, argv);
-    if(argc==2){Sheet=readFile(argv[1]);test=Sheet;}
+    if(argc==2){Sheet=readFile(argv[1]);}
     glutInitWindowSize(Sheet.w(),Sheet.h()); 
     glutInitDisplayMode( GLUT_RGB | GLUT_DOUBLE );
     glutCreateWindow("Heat"); 
