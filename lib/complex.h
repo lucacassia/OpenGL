@@ -27,6 +27,8 @@ class complex
 		complex operator/(const complex&)const;
 		complex operator~(void)const;
 		complex operator^(int)const;
+		complex& operator+=(const complex&);
+		complex& operator-=(const complex&);
 		bool operator==(const complex&)const;
 		bool operator!=(const complex&)const;
 		friend std::ostream& operator<<(std::ostream&,const complex&);

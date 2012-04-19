@@ -53,7 +53,6 @@ complex& complex::operator=(const complex& c)
 	return *this;
 }
 
-
 complex complex::operator+(const complex& c)const
 {
 	complex tmp(real+c.Re(),imag+c.Im());
@@ -104,6 +103,21 @@ complex complex::operator^(int n)const
 		for(int i=0;i>n;i--)
 			tmp=tmp/(*this);
 	return tmp;
+}
+
+complex& complex::operator+=(const complex& c)
+{
+	real+=c.Re();
+	imag+=c.Im();
+	return *this;
+}
+
+
+complex& complex::operator-=(const complex& c)
+{
+	real-=c.Re();
+	imag-=c.Im();
+	return *this;
 }
 
 bool complex::operator==(const complex& c)const
