@@ -1,6 +1,7 @@
 #include<GL/freeglut.h>
 #include<ctime>
 #include"vdp.h"
+#include"../lib/color.h"
 
 #define RAD 0.01
 
@@ -13,12 +14,14 @@ float ds;
 float a;
 point b;
 
-void drawLine(std::vector<point> line,point color)
+void drawLine(std::vector<point> line)
 {
-    glColor3d(color.x,color.y,color.z);
     glBegin(GL_LINE_STRIP);
-    for (int i = 0; i < line.size(); i++)
+    for (int i = 0; i < line.size(); i++){
+        rgb_t color(i/1000.0);
+        glColor3d(color.r,color.g,color.b);
         glVertex2d(line[i].x,line[i].y);
+    }
     glEnd();
 }
 
@@ -34,7 +37,7 @@ void drawCircle(point p,double r,point color)
 void displayF()
 {
     glClear(GL_COLOR_BUFFER_BIT);
-    drawLine(test.tail,newPoint(1,1,1));
+    drawLine(test.tail);
 //    for(int i=0;i<test.tail.size();i++)
 //        drawCircle(test.tail[i],test.rad/(i+1),test.color);
     drawCircle(test.pos(),RAD,newPoint(0,1,1));
