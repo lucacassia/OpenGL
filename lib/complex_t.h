@@ -1,11 +1,11 @@
-#ifndef COMPLEX_H
-#define COMPLEX_H
+#ifndef COMPLEX_T
+#define COMPLEX_T
 
 #include <math.h>
 
 typedef struct{
    double re,im;
-} complex;
+} complex_t;
 
 /*
 * a=b*c (a,b,c complex)
@@ -49,6 +49,33 @@ typedef struct{
 
 #define _complex_mod(a) \
    sqrt((a).re*(a).re+(a).im*(a).im)
+
+
+/*
+* a=sin(b) (a,b complex)
+*/
+
+#define _complex_sin(a,b) \
+   (a).re=(exp(-(b).im)*sin((b).re)-exp((b).im)*sin(-(b).re))/2; \
+   (a).im=-(exp(-(b).im)*cos((b).re)-exp((b).im)*cos(-(b).re))/2
+
+
+/*
+* a=cos(b) (a,b complex)
+*/
+
+#define _complex_cos(a,b) \
+   (a).re=(exp(-(b).im)*cos((b).re)+exp((b).im)*cos(-(b).re))/2; \
+   (a).im=(exp(-(b).im)*sin((b).re)+exp((b).im)*sin(-(b).re))/2
+
+
+/*
+* a=exp(b) (a,b complex)
+*/
+
+#define _complex_exp(a,b) \
+   (a).re=exp((b).re)*cos((b).im); \
+   (a).im=exp((b).re)*sin((b).im)
 
 
 #endif
