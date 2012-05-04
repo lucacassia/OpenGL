@@ -93,7 +93,7 @@ void mouseF(int button, int state, int x, int y)
 
 int main(int argc, char *argv[])
 {
-    Sheet = distribution_alloc(1200,600);
+    Sheet = distribution_alloc(600,600);
     time = modeView = isActive = 1;
     glutInit(&argc, argv);
     glutInitWindowSize(Sheet->width,Sheet->height); 

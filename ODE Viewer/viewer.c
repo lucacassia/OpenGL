@@ -1,13 +1,10 @@
 #include<GL/freeglut.h>
-#include<ctime>
-#include"vdp.h"
-#include"../lib/color.h"
-
-#define RAD 0.01
+#include"ode.h"
+#include"color.h"
 
 bool ACTIVE = true;
 
-vdp test(0,0);
+ode test(0,0);
 
 float scalef = 1.5;
 float ds;
@@ -17,8 +14,9 @@ point b;
 void drawLine(std::vector<point> line)
 {
     glBegin(GL_LINE_STRIP);
-    for (int i = 0; i < line.size(); i++){
-        rgb_t color(i/1000.0);
+    for (size_t i = 0; i < line.size(); i++){
+        rgb_t color;
+        color = d2rgb(i/1000.0);
         glColor3d(color.r,color.g,color.b);
         glVertex2d(line[i].x,line[i].y);
     }
@@ -38,9 +36,7 @@ void displayF()
 {
     glClear(GL_COLOR_BUFFER_BIT);
     drawLine(test.tail);
-//    for(int i=0;i<test.tail.size();i++)
-//        drawCircle(test.tail[i],test.rad/(i+1),test.color);
-    drawCircle(test.pos(),RAD,newPoint(0,1,1));
+    drawCircle(test.pos(),0.01,newPoint(0,1,1));
     glutSwapBuffers();
 }
 
@@ -49,7 +45,7 @@ void reshapeF(int w,int h)
     glViewport(0,0,w,h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluOrtho2D(-w*a/h+b.x,w*a/h+b.x,-a+b.y,a+b.y);
+    glOrtho(-w*a/h+b.x,w*a/h+b.x,-a+b.y,a+b.y,1,-1);
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0.5,0.5,0.5,0.0);
 }
@@ -137,7 +133,7 @@ void mouseF(int button, int state, int x, int y)
 {
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
     {
-        vdp tmp(getPosition(x,y));
+        ode tmp(getPosition(x,y));
         test = tmp;
     }
 }
@@ -154,7 +150,7 @@ int main(int argc, char *argv[])
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGB);
     glutInitWindowSize(500, 500);
-    glutCreateWindow("Van Der Pols");
+    glutCreateWindow("ODE Viewer");
 
     init();
 

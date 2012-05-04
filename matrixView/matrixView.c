@@ -37,9 +37,9 @@ void reshapeF(int w,int h)
 
 void idleF(){}
 
-inline unsigned char toUb(double x)
+inline unsigned char to8U(double x)
 {
-    return (unsigned char)(255*(x+1)/2);
+    return floor(255*((x+1)/2));
 }
 
 void saveToFile()
@@ -49,9 +49,9 @@ void saveToFile()
     int k;
     for(k = 0; k < fraq->size; k++){
         static unsigned char color[3];
-        color[0] = toUb(sin(fraq->pixels[k]*omega+fraq->phase[0]));
-        color[1] = toUb(sin(fraq->pixels[k]*omega+fraq->phase[1]));
-        color[2] = toUb(sin(fraq->pixels[k]*omega+fraq->phase[2]));
+        color[0] = to8U(sin(fraq->pixels[k]*omega+fraq->phase[0]));
+        color[1] = to8U(sin(fraq->pixels[k]*omega+fraq->phase[1]));
+        color[2] = to8U(sin(fraq->pixels[k]*omega+fraq->phase[2]));
         fwrite(color, 1, 3, f);
     }
     fclose(f);
@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
     fraq = matrix_alloc(600,600);
     glutInitWindowSize(fraq->width,fraq->height); 
     glutInitDisplayMode( GLUT_RGB | GLUT_DOUBLE );
-    glutCreateWindow("Fraq"); 
+    glutCreateWindow("matrixView"); 
     GLInit(); 
     glutDisplayFunc(displayF); 
     glutReshapeFunc(reshapeF);

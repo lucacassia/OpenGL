@@ -19,13 +19,13 @@ void GLInit(bool fullscreen=false)
 
 void displayF()
 {
-    float* data = (float*)malloc((Sheet.size())*sizeof(float)*3);
+    float* data = (float*)malloc(3*Sheet.size()*sizeof(float));
     if(data == NULL)
         printf("\n\nmalloc fail!!!\n\n");
 
     rgb_t color;
     for(int k=0;k<Sheet.size();k++){
-        color.set(Sheet[k]);
+        color = d2rgb(Sheet[k]);
         data[3*k+0] = color.r;
         data[3*k+1] = color.g;
         data[3*k+2] = color.b;

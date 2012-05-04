@@ -20,7 +20,7 @@ void matrix_compute(matrix_t *obj)
             z.im = obj->focus.im+(i+(1-obj->height)/2)/obj->zoom;
             tmp.re = 1;
             tmp.im = 0;
-            _complex_div(z,tmp,z);
+//            _complex_div(z,tmp,z);
             _complex_cos(tmp,z);
             _complex_sin(z,z);
             _complex_div(z,z,tmp);
