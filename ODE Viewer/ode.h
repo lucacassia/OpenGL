@@ -81,16 +81,16 @@ point ode::pos()const
 void ode::operator++(int)
 {
     double k1,k2,k3,k4;
-    k1=chaotic(x,v,t)*dt;
-    k2=chaotic(x,v+k1/2,t+dt/2)*dt;
-    k3=chaotic(x,v+k2/2,t+dt/2)*dt;
-    k4=chaotic(x,v+k3,t+dt)*dt;
+    k1=vanderpol(x,v,t)*dt;
+    k2=vanderpol(x,v+k1/2,t+dt/2)*dt;
+    k3=vanderpol(x,v+k2/2,t+dt/2)*dt;
+    k4=vanderpol(x,v+k3,t+dt)*dt;
     x+=v*dt;
     v+=k1/6+k2/3+k3/3+k4/6;
     t+=dt;
     if((tail[tail.size()-1]-pos()).mod()>0.01)
         tail.push_back(pos());
-    if(tailLength()>50)
+    if(tailLength()>500)
         tail.erase(tail.begin());
 }
 
@@ -105,3 +105,23 @@ ode newode(double X,double V){
 }
 
 #endif
+
+typedef struct _plist{
+    double x,y;
+    struct _plist *next;
+}plist;
+
+void plist_add_front(plist **head_ptr, double x, double y){
+    plist *tmp = (plist*)malloc(sizeof(plist));
+    tmp->x = x;
+    tmp->y = y;
+    tmp->next = *head_ptr;
+    *head_ptr = tmp;
+}
+
+void plist_remove_last(plist *head){
+    plist *tmp = head;
+    while(tmp->next != NULL)
+        tmp = tmp->next;
+    
+}

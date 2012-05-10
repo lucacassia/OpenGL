@@ -7,6 +7,8 @@ typedef struct{
    double re,im;
 } complex_t;
 
+static const complex_t COMPLEX_ZERO = {.re = 0, .im = 0};
+
 /*
 * a=b*c (a,b,c complex)
 */
@@ -76,6 +78,38 @@ typedef struct{
 #define _complex_exp(a,b) \
    (a).re=exp((b).re)*cos((b).im); \
    (a).im=exp((b).re)*sin((b).im)
+
+
+complex_t scalardot(complex_t *x, complex_t *y, int n)
+{
+    complex_t tmp;
+    tmp.re = tmp.im = 0;
+    int i;
+    for(i = 0; i < n; i++){
+        x[n].im = -x[n].im;
+        _complex_mul(tmp,x[n],y[n]);
+    }
+    return tmp;
+}
+
+double mod(complex_t *x, int n)
+{
+    double tmp = 0;
+    int i;
+    for(i = 0; i < n; i++)
+        tmp += x[i].re * x[i].re + x[i].im * x[i].im;
+    return sqrt(tmp);
+}
+
+void normalize(complex_t *matrix, int n)
+{
+    double tmp = mod(matrix,n);
+    int i;
+    for(i = 0; i < n; i++){
+        matrix[i].re /= tmp;
+        matrix[i].im /= tmp;
+    }
+}
 
 
 #endif
