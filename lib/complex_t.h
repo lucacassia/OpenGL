@@ -8,6 +8,8 @@ typedef struct{
 } complex_t;
 
 static const complex_t COMPLEX_ZERO = {.re = 0, .im = 0};
+static const complex_t COMPLEX_ONE = {.re = 1, .im = 0};
+static const complex_t COMPLEX_I = {.re = 0, .im = 1};
 
 /*
 * a=b*c (a,b,c complex)
@@ -80,7 +82,7 @@ static const complex_t COMPLEX_ZERO = {.re = 0, .im = 0};
    (a).im=exp((b).re)*sin((b).im)
 
 
-complex_t scalardot(complex_t *x, complex_t *y, int n)
+complex_t scalar(complex_t *x, complex_t *y, int n)
 {
     complex_t tmp;
     tmp.re = tmp.im = 0;
@@ -92,7 +94,7 @@ complex_t scalardot(complex_t *x, complex_t *y, int n)
     return tmp;
 }
 
-double mod(complex_t *x, int n)
+double norm(complex_t *x, int n)
 {
     double tmp = 0;
     int i;
@@ -101,16 +103,27 @@ double mod(complex_t *x, int n)
     return sqrt(tmp);
 }
 
-void normalize(complex_t *matrix, int n)
+void normalize(complex_t *x, int n)
 {
-    double tmp = mod(matrix,n);
+    double tmp = norm(x,n);
     int i;
     for(i = 0; i < n; i++){
-        matrix[i].re /= tmp;
-        matrix[i].im /= tmp;
+        x[i].re /= tmp;
+        x[i].im /= tmp;
     }
+}
+
+complex_t laplacian2d(complex_t *matrix, int w, int h, int k)
+{
+    complex_t env = COMPLEX_ZERO;
+    _complex_add(env, env, matrix[(k/w)*w+(k%w+1)%w]);
+    _complex_add(env, env, matrix[(k/w)*w+(k%w+w-1)%w]);
+    _complex_add(env, env, matrix[((k/w+1)%h)*w+k%w]);
+    _complex_add(env, env, matrix[((k/w+h-1)%h)*w+k%w]);
+    env.re = (env.re / 4 - matrix[k].re);
+    env.im = (env.im / 4 - matrix[k].im);
+    return env;
 }
 
 
 #endif
-

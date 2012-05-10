@@ -1,11 +1,18 @@
 #ifndef DISTRIBUTION
 #define DISTRIBUTION
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "complex_t.h"
 
 #define WAVE
+
+double dt = (1e-9);
+double mass = 1;
+double omega  = 1;
+double hbar = 1;
+double potential(x,y){ return (mass*omega*omega*((x)*(x)+(y)*(y))/2); }
 
 typedef struct{
     int width,height,size;
@@ -19,11 +26,11 @@ distribution *distribution_alloc(int w, int h)
     distribution *obj = (distribution*)malloc(sizeof(distribution));
     obj->width = w;
     obj->height = h;
-    obj->size = w*h;
-    obj->psi = (complex_t*)malloc(w*h*sizeof(complex_t));
-    obj->phi = (complex_t*)malloc(w*h*sizeof(complex_t));
-    obj->source = (complex_t*)malloc(w*h*sizeof(complex_t));
-    int i; for(i = 0; i < w*h; i++)
+    obj->size = w * h;
+    obj->psi = (complex_t*)malloc(w * h * sizeof(complex_t));
+    obj->phi = (complex_t*)malloc(w * h * sizeof(complex_t));
+    obj->source = (complex_t*)malloc(w * h * sizeof(complex_t));
+    int i; for(i = 0; i < w * h; i++)
         obj->source[i] = obj->phi[i] = obj->psi[i] = COMPLEX_ZERO;
     return obj;
 }
@@ -36,118 +43,110 @@ void distribution_free(distribution *obj)
     free(obj);
 }
 
-complex_t laplacian(complex_t *matrix, int w, int h, int n)
-{
-    complex_t env = COMPLEX_ZERO;
-    _complex_add(env, env, matrix[(n/w)*w+(n%w+1)%w]);
-    _complex_add(env, env, matrix[(n/w)*w+(n%w+w-1)%w]);
-    _complex_add(env, env, matrix[((n/w+1)%h)*w+n%w]);
-    _complex_add(env, env, matrix[((n/w+h-1)%h)*w+n%w]);
-    env.re /= 4;
-    env.im /= 4;
-    _complex_sub(env, env, matrix[n]);
-    return env;
-}
-
 complex_t hamiltonian(complex_t *matrix, int w, int h, int k)
 {
-    complex_t env = COMPLEX_ZERO;
-    _complex_add(env, env, matrix[(k/w)*w+(k%w+1)%w]);
-    _complex_add(env, env, matrix[(k/w)*w+(k%w+w-1)%w]);
-    _complex_add(env, env, matrix[((k/w+1)%h)*w+k%w]);
-    _complex_add(env, env, matrix[((k/w+h-1)%h)*w+k%w]);
-    env.re = (env.re/4 - matrix[k].re) + (1e-8)*((k/w-h/2)*(k/w-h/2)+(k%w-w/2)*(k%w-w/2)) * matrix[k].re;
-    env.im = (env.im/4 - matrix[k].im) + (1e-8)*((k/w-h/2)*(k/w-h/2)+(k%w-w/2)*(k%w-w/2)) * matrix[k].im;
-    return env;
+    complex_t H = COMPLEX_ZERO;
+    _complex_add(H, H, matrix[(k/w)*w+(k%w+1)%w]);
+    _complex_add(H, H, matrix[(k/w)*w+(k%w+w-1)%w]);
+    _complex_add(H, H, matrix[((k/w+1)%h)*w+k%w]);
+    _complex_add(H, H, matrix[((k/w+h-1)%h)*w+k%w]);
+    H.re = -hbar*hbar*(H.re - 4*matrix[k].re)/(2*mass) + potential((k/w)*2.0/h-1, (k%w)*2/w-1) * matrix[k].re;
+    H.im = -hbar*hbar*(H.im - 4*matrix[k].im)/(2*mass) + potential((k/w)*2.0/h-1, (k%w)*2/w-1) * matrix[k].im;
+    return H;
+}
+
+void evaluateM(complex_t *M, complex_t *x, int w, int h)
+{
+    int i;
+    complex_t *A = malloc(w * h * sizeof(complex_t));
+    complex_t *A2 = malloc(w * h * sizeof(complex_t));
+    for(i = 0; i < w * h; i++)
+        A[i] = hamiltonian(x,w,h,i);
+    for(i = 0; i < w * h; i++)
+        A2[i] = hamiltonian(A,w,h,i);
+    for(i = 0; i < w * h; i++){
+        M[i].re = x[i].re + A2[i].re * dt * dt / 4 / hbar / hbar;
+        M[i].im = x[i].im + A2[i].im * dt * dt / 4 / hbar / hbar;
+    }
+    free(A);
+    free(A2);
 }
 
 void distribution_compute(distribution *obj)
 {
-    int i,n;
-    n = obj->size;
-    complex_t tmp;
-    complex_t *x = malloc(n*sizeof(complex_t));
-    memcpy(x, obj->psi, n*sizeof(complex_t));
+    int i, n = obj->size;
 #ifdef WAVE
+    complex_t tmp, *x = malloc(n * sizeof(complex_t));
+    memcpy(x, obj->psi, n * sizeof(complex_t));
     for(i = 0; i < n; i++){
-        tmp = laplacian(obj->psi,obj->width,obj->height,i);
+        tmp = laplacian2d(obj->psi,obj->width,obj->height,i);
         obj->phi[i].re += tmp.re + obj->source[i].re;
         obj->phi[i].im += tmp.im + obj->source[i].im;
-        x[i].re += obj->phi[i].re;
-        x[i].im += obj->phi[i].im;
+        _complex_add(x[i], x[i], obj->phi[i]);
     }
-#endif
-#ifdef QUANTUM
-    complex_t *A = malloc(n*sizeof(complex_t));
-    complex_t *b = malloc(n*sizeof(complex_t));
-    complex_t *L = malloc(n*sizeof(complex_t));
-    complex_t *L2 = malloc(n*sizeof(complex_t));
-    complex_t *r = malloc(n*sizeof(complex_t));
-    complex_t *p = malloc(n*sizeof(complex_t));
+    memcpy(obj->psi, x, n * sizeof(complex_t));
+    free(x);
+#else
+    normalize(obj->psi,n);
+    complex_t *M = malloc(n * sizeof(complex_t));
+    complex_t *A = malloc(n * sizeof(complex_t));
+    complex_t *A2 = malloc(n * sizeof(complex_t));
+    complex_t *r = malloc(n * sizeof(complex_t));
+    complex_t *p = malloc(n * sizeof(complex_t));
+    for(i = 0; i < n; i++)
+        A[i] = hamiltonian(obj->psi, obj->width, obj->height, i);
+    for(i = 0; i < n; i++)
+        A2[i] = hamiltonian(A, obj->width, obj->height, i);
     for(i = 0; i < n; i++){
-        tmp = laplacian(obj->psi,obj->width,obj->height,i);
-        _complex_mul(L[i],obj->source[i],obj->psi[i]);
-        _complex_add(L[i],L[i],tmp);
-    }
-    for(i = 0; i < n; i++){
-        tmp = laplacian(L,obj->width,obj->height,i);
-        _complex_mul(L2[i],obj->source[i],obj->psi[i]);
-        _complex_add(L2[i],L2[i],tmp);
+        M[i].re = obj->psi[i].re + A2[i].re * dt * dt / 4 / hbar / hbar;
+        M[i].im = obj->psi[i].im + A2[i].im * dt * dt / 4 / hbar / hbar;
     }
     for(i = 0; i < n; i++){
-        b[i].re = obj->psi[i].re + L[i].im*(1e-2)/2 + L2[i].re*(1e-2)/4;
-        b[i].re = obj->psi[i].im - L[i].re*(1e-2)/2 + L2[i].im*(1e-2)/4;
+        r[i].re = obj->psi[i].re + A[i].im * dt / hbar - A2[i].re * dt * dt / 4 / hbar / hbar;
+        r[i].im = obj->psi[i].im - A[i].re * dt / hbar - A2[i].im * dt * dt / 4 / hbar / hbar;
     }
     for(i = 0; i < n; i++){
-        L[i] = laplacian(x,obj->width,obj->height,i);
-    }
-    for(i = 0; i < n; i++){
-        L2[i] = laplacian(L,obj->width,obj->height,i);
-    }
-    for(i = 0; i < n; i++){
-        A[i].re = x[i].re + L2[i].re*(1e-2)/4;
-        A[i].re = x[i].im + L2[i].im*(1e-2)/4;
-    }
-    for(i = 0; i < n; i++){
-        r[i].re = b[i].re - A[i].re;
-        r[i].im = b[i].im - A[i].im;
+        _complex_sub(r[i], r[i], M[i]);
         p[i] = r[i];
     }
 
-    while(mod(r,n) > 1e-8){
-        complex_t alpha,beta,r2;
-        r2 = scalardot(r,r,n);
+    double rs = norm(r,n);
+    printf("\n rsold = %e\n",rs);
+    while(1){
+        static complex_t alpha, beta;
+        evaluateM(M,r,obj->width,obj->height);
+        alpha = scalar(r,M,n);
+        evaluateM(M, p, obj->width, obj->height);
+        _complex_div(alpha, alpha, scalar(M,M,n));
+        evaluateM(M, r, obj->width, obj->height);
+        _complex_div(beta, COMPLEX_ONE, scalar(r,M,n));
         for(i = 0; i < n; i++){
-            tmp = laplacian(p,obj->width,obj->height,i);
-            _complex_mul(A[i],obj->source[i],p[i]);
-            _complex_add(A[i],A[i],tmp);
+            complex_t tmp;
+            _complex_mul(tmp, alpha, p[i]);
+            _complex_add(obj->psi[i], obj->psi[i], tmp);
+            _complex_mul(tmp, alpha, M[i]);
+            _complex_sub(r[i], r[i], tmp);
         }
-        _complex_div(alpha,r2,scalardot(A,p,n));
+        rs = norm(r,n);
+        printf(" rsnew = %e\n",rs);
+        if(rs < 1e-10) break;
+        evaluateM(M, r, obj->width, obj->height);
+        _complex_mul(beta, beta, scalar(r,M,n));
+        evaluateM(M, p, obj->width, obj->height);
+        evaluateM(A, r, obj->width, obj->height);
         for(i = 0; i < n; i++){
-            _complex_mul(tmp,alpha,p[i]);
-            x[i].re += tmp.re;
-            x[i].im += tmp.im;
-            _complex_mul(tmp,alpha,A[i]);
-            r[i].re -= tmp.re;
-            r[i].im -= tmp.im;
-        }
-        _complex_mul(beta,scalardot(r,r,n),r2);
-        for(i = 0; i < n; i++){
-            _complex_mul(tmp,beta,p[i]);
-            p[i].re = r[i].re + tmp.re;
-            p[i].im = r[i].im + tmp.im;
+            _complex_mul(p[i], p[i], beta);
+            _complex_add(p[i], p[i], r[i]);
+            _complex_mul(M[i], beta, M[i]);
+            _complex_add(M[i], M[i], A[i]);
         }
     }
+    free(M);
     free(A);
-    free(b);
-    free(L);
-    free(L2);
+    free(A2);
     free(r);
     free(p);
-    normalize(x,n);
 #endif
-    memcpy(obj->psi, x, n*sizeof(complex_t));
-    free(x);
 }
 
 #endif

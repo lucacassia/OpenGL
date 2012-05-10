@@ -20,9 +20,9 @@ int main(int argc, char *argv[])
         pixels->psi[n].im += exp(-(rx*rx+ry*ry)/10000)*sin(rx*kx+ry*ky);
     }
 
-    int runTime = atoi(argv[1]), fps = 30;
+    int runTime = atoi(argv[1]);
     char *frame = (char*)malloc(3*(pixels->size)*sizeof(char));
-    for(n = 0; n < fps*runTime; n++){
+    for(n = 0; n < runTime; n++){
         distribution_compute(pixels);
         for(k = 0; k < pixels->size; k++){
             rgb8U_t color = d2rgb8U(_complex_mod(pixels->psi[k]));
