@@ -83,12 +83,12 @@ void evaluateM(complex_t *M, complex_t *x, int w, int h)
 
 void distribution_compute(distribution *obj)
 {
-    int i, n = obj->size;
+    int i, n = obj->size, w = obj->width, h = obj->height;
 #ifdef WAVE
     complex_t tmp, *x = malloc(n * sizeof(complex_t));
     memcpy(x, obj->psi, n * sizeof(complex_t));
     for(i = 0; i < n; i++){
-        tmp = laplacian2d(obj->psi,obj->width,obj->height,i);
+        tmp = laplacian2d(obj->psi,w,h,i);
         obj->phi[i].re += tmp.re + obj->source[i].re;
         obj->phi[i].im += tmp.im + obj->source[i].im;
         _complex_add(x[i], x[i], obj->phi[i]);
@@ -103,9 +103,9 @@ void distribution_compute(distribution *obj)
     complex_t *r = malloc(n * sizeof(complex_t));
     complex_t *p = malloc(n * sizeof(complex_t));
     for(i = 0; i < n; i++)
-        A[i] = hamiltonian(obj->psi, obj->width, obj->height, i);
+        A[i] = hamiltonian(obj->psi, w, h, i);
     for(i = 0; i < n; i++)
-        A2[i] = hamiltonian(A, obj->width, obj->height, i);
+        A2[i] = hamiltonian(A, w, h, i);
     for(i = 0; i < n; i++){
         M[i].re = obj->psi[i].re + A2[i].re * dt * dt / 4 / hbar / hbar;
         M[i].im = obj->psi[i].im + A2[i].im * dt * dt / 4 / hbar / hbar;
@@ -125,12 +125,11 @@ void distribution_compute(distribution *obj)
     double rs = norm(r,n);
     printf("\n rsold = %14.10e\n",rs);
     while(1){
-        static complex_t alpha, beta, tmp;
-        evaluateM(M,r,obj->width,obj->height);
-        tmp = scalar(r,M,n);
-        evaluateM(M, p, obj->width, obj->height);
-        _complex_div(alpha, tmp, scalar(M,M,n));
-        _complex_div(beta, COMPLEX_ONE, tmp);
+        static complex_t alpha, beta, rMr, tmp;
+        evaluateM(M, r, w, h);
+        rMr = scalar(r,M,n);
+        evaluateM(M, p, w, h);
+        _complex_div(alpha, rMr, scalar(M,M,n));
         for(i = 0; i < n; i++){
             _complex_mul(tmp, alpha, p[i]);
             _complex_add(obj->psi[i], obj->psi[i], tmp);
@@ -140,10 +139,10 @@ void distribution_compute(distribution *obj)
         rs = norm(r,n);
         printf(" rsnew = %14.10e\n",rs);
         if(rs/b < 1e-10) break;
-        evaluateM(M, r, obj->width, obj->height);
-        _complex_mul(beta, beta, scalar(r,M,n));
-        evaluateM(M, p, obj->width, obj->height);
-        evaluateM(A, r, obj->width, obj->height);
+        evaluateM(M, r, w, h);
+        _complex_div(beta, scalar(r,M,n), rMr);
+        evaluateM(M, p, w, h);
+        evaluateM(A, r, w, h);
         for(i = 0; i < n; i++){
             _complex_mul(p[i], p[i], beta);
             _complex_add(p[i], p[i], r[i]);
