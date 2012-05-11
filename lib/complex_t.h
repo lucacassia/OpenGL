@@ -84,12 +84,11 @@ static const complex_t COMPLEX_I = {.re = 0, .im = 1};
 
 complex_t scalar(complex_t *x, complex_t *y, int n)
 {
-    complex_t tmp;
-    tmp.re = tmp.im = 0;
+    complex_t tmp = COMPLEX_ZERO;
     int i;
     for(i = 0; i < n; i++){
-        x[n].im = -x[n].im;
-        _complex_mul(tmp,x[n],y[n]);
+        x[i].im = -x[i].im;
+        _complex_mul(tmp,x[i],y[i]);
     }
     return tmp;
 }

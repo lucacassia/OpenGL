@@ -6,13 +6,22 @@
 #include <string.h>
 #include "complex_t.h"
 
-#define WAVE
+//#define WAVE
+#define GLOBAL
 
-double dt = (1e-9);
+#ifdef GLOBAL
+double dt = (1);
 double mass = 1;
 double omega  = 1;
 double hbar = 1;
-double potential(x,y){ return (mass*omega*omega*((x)*(x)+(y)*(y))/2); }
+double potential(double x,double y){ return (mass*omega*omega*((x)*(x)+(y)*(y))/2.0); }
+#else
+#define dt (1e-9)
+#define mass 1.0
+#define omega 1.0
+#define hbar 1.0
+#define potential(x,y) (mass*omega*omega*((x)*(x)+(y)*(y))/2.0)
+#endif
 
 typedef struct{
     int width,height,size;
@@ -105,31 +114,32 @@ void distribution_compute(distribution *obj)
         r[i].re = obj->psi[i].re + A[i].im * dt / hbar - A2[i].re * dt * dt / 4 / hbar / hbar;
         r[i].im = obj->psi[i].im - A[i].re * dt / hbar - A2[i].im * dt * dt / 4 / hbar / hbar;
     }
+    double b = norm(r,n);
+    printf("\n norm(b) = %14.10e\n",b);
+
     for(i = 0; i < n; i++){
         _complex_sub(r[i], r[i], M[i]);
         p[i] = r[i];
     }
 
     double rs = norm(r,n);
-    printf("\n rsold = %e\n",rs);
+    printf("\n rsold = %14.10e\n",rs);
     while(1){
-        static complex_t alpha, beta;
+        static complex_t alpha, beta, tmp;
         evaluateM(M,r,obj->width,obj->height);
-        alpha = scalar(r,M,n);
+        tmp = scalar(r,M,n);
         evaluateM(M, p, obj->width, obj->height);
-        _complex_div(alpha, alpha, scalar(M,M,n));
-        evaluateM(M, r, obj->width, obj->height);
-        _complex_div(beta, COMPLEX_ONE, scalar(r,M,n));
+        _complex_div(alpha, tmp, scalar(M,M,n));
+        _complex_div(beta, COMPLEX_ONE, tmp);
         for(i = 0; i < n; i++){
-            complex_t tmp;
             _complex_mul(tmp, alpha, p[i]);
             _complex_add(obj->psi[i], obj->psi[i], tmp);
             _complex_mul(tmp, alpha, M[i]);
             _complex_sub(r[i], r[i], tmp);
         }
         rs = norm(r,n);
-        printf(" rsnew = %e\n",rs);
-        if(rs < 1e-10) break;
+        printf(" rsnew = %14.10e\n",rs);
+        if(rs/b < 1e-10) break;
         evaluateM(M, r, obj->width, obj->height);
         _complex_mul(beta, beta, scalar(r,M,n));
         evaluateM(M, p, obj->width, obj->height);
