@@ -125,11 +125,12 @@ void distribution_compute(distribution *obj)
     double rs = norm(r,n);
     printf("\n rsold = %14.10e\n",rs);
     while(1){
-        static complex_t alpha, beta, rMr, tmp;
-        evaluateM(M, r, w, h);
-        rMr = scalar(r,M,n);
+        static complex_t alpha, beta, rAr, tmp;
+        evaluateM(A, r, w, h);
+        rAr = scalar(r,A,n);
         evaluateM(M, p, w, h);
-        _complex_div(alpha, rMr, scalar(M,M,n));
+        tmp = scalar(M,M,n);
+        _complex_div(alpha, rAr, tmp);
         for(i = 0; i < n; i++){
             _complex_mul(tmp, alpha, p[i]);
             _complex_add(obj->psi[i], obj->psi[i], tmp);
@@ -138,16 +139,15 @@ void distribution_compute(distribution *obj)
         }
         rs = norm(r,n);
         printf(" rsnew = %14.10e\n",rs);
-        if(rs/b < 1e-10) break;
-        evaluateM(M, r, w, h);
-        _complex_div(beta, scalar(r,M,n), rMr);
-        evaluateM(M, p, w, h);
-        evaluateM(A, r, w, h);
+        if(rs/b < 1e-6) break;
+        evaluateM(A2, r, w, h);
+        tmp = scalar(r,A2,n);
+        _complex_div(beta, tmp, rAr);
         for(i = 0; i < n; i++){
             _complex_mul(p[i], p[i], beta);
             _complex_add(p[i], p[i], r[i]);
             _complex_mul(M[i], beta, M[i]);
-            _complex_add(M[i], M[i], A[i]);
+            _complex_add(M[i], M[i], A2[i]);
         }
     }
     free(M);
