@@ -1,127 +1,62 @@
 #ifndef ODE
 #define ODE
 
-#include<vector>
-#include"point.h"
+#include <math.h>
 
 #define dt (1e-3)
 
-class ode{
-    public:
-        double x;
-        double v;
-        double t;
-        std::vector<point> tail;
-        double chaotic(double,double,double);
-        double vanderpol(double,double,double);
-
-    public:
-        ode(double,double);
-        ode(const ode&);
-        ode(const point&);
-        ~ode(){};
-        ode& operator =(const ode&);
-        float tailLength();
-        point pos()const;
-        void operator++(int);
-
-};
-
-double ode::chaotic(double X,double V,double T){
-    return -sin(X)-0.3*V+1.4*cos(2*T/3);
+double chaotic(double x,double v,double t){
+    return -sin(x)-0.3*v+1.4*cos(2*t/3);
 }
 
-double ode::vanderpol(double X,double V,double T){
-    return 4*(1-X*X)*V-X;
+double vanderpol(double x,double v,double t){
+    return 4*(1-x*x)*v-x;
 }
-
-ode::ode(double X,double V){
-    x=X;
-    v=V;
-    t=0;
-    tail.resize(1,newPoint(x,v));
-}
-
-ode::ode(const point& p){
-    x=p.x;
-    v=p.y;
-    t=0;
-    tail.resize(1,p);
-}
-
-ode::ode(const ode& arg){
-    x=arg.x;
-    v=arg.v;
-    t=arg.t;
-    tail=arg.tail;
-}
-
-ode& ode::operator =(const ode& arg)
-{
-    x=arg.x;
-    v=arg.v;
-    t=arg.t;
-    tail=arg.tail;
-    return *this;
-}
-
-float ode::tailLength()
-{
-    float tmp = 0;
-    for(size_t i = 0; i < tail.size()-1; i++)
-        tmp += (tail[i+1]-tail[i]).mod();
-    return tmp;
-}
-
-point ode::pos()const
-{
-    return newPoint(x,v);
-}
-
-void ode::operator++(int)
-{
-    double k1,k2,k3,k4;
-    k1=vanderpol(x,v,t)*dt;
-    k2=vanderpol(x,v+k1/2,t+dt/2)*dt;
-    k3=vanderpol(x,v+k2/2,t+dt/2)*dt;
-    k4=vanderpol(x,v+k3,t+dt)*dt;
-    x+=v*dt;
-    v+=k1/6+k2/3+k3/3+k4/6;
-    t+=dt;
-    if((tail[tail.size()-1]-pos()).mod()>0.01)
-        tail.push_back(pos());
-    if(tailLength()>500)
-        tail.erase(tail.begin());
-}
-
-ode newode(const point& p){
-    ode tmp(p);
-    return tmp;
-}
-
-ode newode(double X,double V){
-    ode tmp(X,V);
-    return tmp;
-}
-
-#endif
 
 typedef struct _plist{
-    double x,y;
+    double x,y,t;
+    struct _plist *prev;
     struct _plist *next;
 }plist;
 
-void plist_add_front(plist **head_ptr, double x, double y){
+void plist_add_front(plist **head_ptr, double x, double y, double t){
     plist *tmp = (plist*)malloc(sizeof(plist));
     tmp->x = x;
     tmp->y = y;
+    tmp->t = t;
     tmp->next = *head_ptr;
+    tmp->prev = NULL;
     *head_ptr = tmp;
+    if(tmp->next != NULL)
+        (tmp->next)->prev = tmp;
 }
 
-void plist_remove_last(plist *head){
-    plist *tmp = head;
-    while(tmp->next != NULL)
-        tmp = tmp->next;
-    
+void plist_remove_last(plist **tail_ptr){
+    if(*tail_ptr != NULL){
+        *tail_ptr = (*tail_ptr)->prev;
+        free((*tail_ptr)->next);
+        (*tail_ptr)->next = NULL;
+    }
 }
+
+void plist_erase(plist **head){
+    while(*head != NULL){
+        plist *tmp = *head;
+        *head = (*head)->next;
+        free(tmp);
+    }
+}
+
+void plist_evolve_ode(plist **head_ptr, plist **tail_ptr){
+    double x, y, t, k1, k2, k3, k4;
+    x = (*head_ptr)->x;
+    y = (*head_ptr)->y;
+    t = (*head_ptr)->t;
+    k1 = vanderpol(x,y,t)*dt;
+    k2 = vanderpol(x,y+k1/2,t+dt/2)*dt;
+    k3 = vanderpol(x,y+k2/2,t+dt/2)*dt;
+    k4 = vanderpol(x,y+k3,t+dt)*dt;
+    plist_add_front(head_ptr, x+y*dt, y+k1/6+k2/3+k3/3+k4/6, t+dt);
+}
+
+#endif

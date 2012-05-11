@@ -21,7 +21,7 @@ all: rmxeq mkdep mkxeq rmpmk
 
 MAIN = viewer
 
-MODULES = point
+MODULES = 
 
 
 # search path for modules

@@ -1,42 +1,45 @@
-#include<GL/freeglut.h>
-#include"ode.h"
-#include"color.h"
+#include <GL/freeglut.h>
+#include "ode.h"
+#include "color.h"
 
 bool ACTIVE = true;
 
-ode test(0,0);
+plist *list = NULL;
 
 float scalef = 1.5;
 float ds;
 float a;
-point b;
+plist b;
 
-void drawLine(std::vector<point> line)
+void drawLine(plist *trail, rgb_t color)
 {
     glBegin(GL_LINE_STRIP);
-    for (size_t i = 0; i < line.size(); i++){
-        rgb_t color;
-        color = d2rgb(i/1000.0);
-        glColor3d(color.r,color.g,color.b);
-        glVertex2d(line[i].x,line[i].y);
+    glColor3d(color.r,color.g,color.b);
+    while(trail != NULL){
+        glVertex2d(trail->x,trail->y);
+        trail = trail->next;
     }
     glEnd();
 }
 
-void drawCircle(point p,double r,point color)
+void drawCircle(plist head, double r, rgb_t color)
 {
-    glColor3d(color.x,color.y,color.z);
+    glColor3d(color.r,color.g,color.b);
     glBegin(GL_POLYGON);
     for (int i = 0; i < 360; i++)
-        glVertex2d(p.x+r*cos(i*3.14159265/180),p.y+r*sin(i*3.14159265/180));
+        glVertex2d(head.x+r*cos(i*3.14159265/180), head.y+r*sin(i*3.14159265/180));
     glEnd();
 }
 
 void displayF()
 {
     glClear(GL_COLOR_BUFFER_BIT);
-    drawLine(test.tail);
-    drawCircle(test.pos(),0.01,newPoint(0,1,1));
+    rgb_t color;
+    color.r = 0;
+    color.g = 96/255.0;
+    color.b = 173/255.0;
+    drawLine(list, color);
+    drawCircle(*list, 0.02, color);
     glutSwapBuffers();
 }
 
@@ -47,13 +50,15 @@ void reshapeF(int w,int h)
     glLoadIdentity();
     glOrtho(-w*a/h+b.x,w*a/h+b.x,-a+b.y,a+b.y,1,-1);
     glClear(GL_COLOR_BUFFER_BIT);
-    glClearColor(0.5,0.5,0.5,0);
+    glClearColor(1,1,1,0);
 }
 
 void init()
 {
+    plist_add_front(&list,0,0,0);
+
     ACTIVE = true;
-    b = newPoint();
+    b.x = b.y = 0;
     ds = 0.05;
     a = 1;
 
@@ -121,27 +126,32 @@ void specialKeyboardF(int key, int x, int y)
     }
 }
 
-point getPosition(int x, int y)
+plist getPosition(int x, int y)
 {
     int viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
     y = viewport[3]-y;
-    return newPoint((2.0*x/viewport[2]-1)*viewport[2]/viewport[3],2.0*y/viewport[3]-1) * a + b;
+    plist tmp;
+    tmp.x = ((x*2.0/viewport[2]-1)*viewport[2]/viewport[3]) * a + b.x;
+    tmp.y = (2.0*y/viewport[3]-1) * a + b.y;
+    tmp.t = 0;
+    return tmp;
 }
 
 void mouseF(int button, int state, int x, int y)
 {
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
     {
-        ode tmp(getPosition(x,y));
-        test = tmp;
+        plist tmp = getPosition(x,y);
+        plist_erase(&list);
+        plist_add_front(&list, tmp.x, tmp.y, tmp.t);
     }
 }
 
 void idleF(void)
 {
     if(ACTIVE)
-        test++;
+        plist_evolve_ode(&list, NULL);
     glutPostRedisplay();
 }
 
