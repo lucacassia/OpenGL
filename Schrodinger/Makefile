@@ -38,7 +38,7 @@ INCPATH = ../lib
 
 # additional libraries to be included 
  
-LIBS = m glut GL X11
+LIBS = m glut GL X11 GLU
 
 LIBPATH =
 

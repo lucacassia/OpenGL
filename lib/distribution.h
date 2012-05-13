@@ -6,15 +6,15 @@
 #include <string.h>
 #include "complex_t.h"
 
-//#define WAVE
+#define WAVE
 #define GLOBAL
 
 #ifdef GLOBAL
-double dt = (1);
-double mass = 1;
-double omega  = 1;
-double hbar = 1;
-double potential(double x,double y){ return (mass*omega*omega*((x)*(x)+(y)*(y))/2.0); }
+double dt = (1e-1);
+double mass = 1.0;
+double omega  = 1.0;
+double hbar = 1.0;
+double potential(double x,double y){ return 0.0;}//mass*omega*omega*((x)*(x)+(y)*(y))/2.0; }
 #else
 #define dt (1e-9)
 #define mass 1.0
@@ -59,33 +59,31 @@ complex_t hamiltonian(complex_t *matrix, int w, int h, int k)
     _complex_add(H, H, matrix[(k/w)*w+(k%w+w-1)%w]);
     _complex_add(H, H, matrix[((k/w+1)%h)*w+k%w]);
     _complex_add(H, H, matrix[((k/w+h-1)%h)*w+k%w]);
-    H.re = -hbar*hbar*(H.re - 4*matrix[k].re)/(2*mass) + potential((k/w)*2.0/h-1, (k%w)*2/w-1) * matrix[k].re;
-    H.im = -hbar*hbar*(H.im - 4*matrix[k].im)/(2*mass) + potential((k/w)*2.0/h-1, (k%w)*2/w-1) * matrix[k].im;
+    H.re = -hbar*hbar*(H.re - 4.0*matrix[k].re)/(2.0*mass) + potential((k%w)*2.0/w-1.0, (k/w)*2.0/h-1.0) * matrix[k].re;
+    H.im = -hbar*hbar*(H.im - 4.0*matrix[k].im)/(2.0*mass) + potential((k%w)*2.0/w-1.0, (k/w)*2.0/h-1.0) * matrix[k].im;
     return H;
 }
 
 void evaluateM(complex_t *M, complex_t *x, int w, int h)
 {
     int i;
-    complex_t *A = malloc(w * h * sizeof(complex_t));
-    complex_t *A2 = malloc(w * h * sizeof(complex_t));
+    complex_t *H = (complex_t*)malloc(w * h * sizeof(complex_t));
     for(i = 0; i < w * h; i++)
-        A[i] = hamiltonian(x,w,h,i);
+        H[i] = hamiltonian(x,w,h,i);
     for(i = 0; i < w * h; i++)
-        A2[i] = hamiltonian(A,w,h,i);
+        M[i] = hamiltonian(H,w,h,i);
     for(i = 0; i < w * h; i++){
-        M[i].re = x[i].re + A2[i].re * dt * dt / 4 / hbar / hbar;
-        M[i].im = x[i].im + A2[i].im * dt * dt / 4 / hbar / hbar;
+        M[i].re = x[i].re + M[i].re * dt * dt / 4 / hbar / hbar;
+        M[i].im = x[i].im + M[i].im * dt * dt / 4 / hbar / hbar;
     }
-    free(A);
-    free(A2);
+    free(H);
 }
 
 void distribution_compute(distribution *obj)
 {
     int i, n = obj->size, w = obj->width, h = obj->height;
 #ifdef WAVE
-    complex_t tmp, *x = malloc(n * sizeof(complex_t));
+    complex_t tmp, *x = (complex_t*)malloc(n * sizeof(complex_t));
     memcpy(x, obj->psi, n * sizeof(complex_t));
     for(i = 0; i < n; i++){
         tmp = laplacian2d(obj->psi,w,h,i);
@@ -97,26 +95,25 @@ void distribution_compute(distribution *obj)
     free(x);
 #else
     normalize(obj->psi,n);
-    complex_t *M = malloc(n * sizeof(complex_t));
-    complex_t *A = malloc(n * sizeof(complex_t));
-    complex_t *A2 = malloc(n * sizeof(complex_t));
-    complex_t *r = malloc(n * sizeof(complex_t));
-    complex_t *p = malloc(n * sizeof(complex_t));
+    complex_t *M = (complex_t*)malloc(n * sizeof(complex_t));
+    complex_t *A = (complex_t*)malloc(n * sizeof(complex_t));
+    complex_t *A2 = (complex_t*)malloc(n * sizeof(complex_t));
+    complex_t *r = (complex_t*)malloc(n * sizeof(complex_t));
+    complex_t *p = (complex_t*)malloc(n * sizeof(complex_t));
+
     for(i = 0; i < n; i++)
         A[i] = hamiltonian(obj->psi, w, h, i);
     for(i = 0; i < n; i++)
         A2[i] = hamiltonian(A, w, h, i);
     for(i = 0; i < n; i++){
-        M[i].re = obj->psi[i].re + A2[i].re * dt * dt / 4 / hbar / hbar;
-        M[i].im = obj->psi[i].im + A2[i].im * dt * dt / 4 / hbar / hbar;
+        obj->psi[i].re = r[i].re = obj->psi[i].re + A[i].im * dt / hbar - A2[i].re * dt * dt / 4 / hbar / hbar;
+        obj->psi[i].im = r[i].im = obj->psi[i].im - A[i].re * dt / hbar - A2[i].im * dt * dt / 4 / hbar / hbar;
     }
-    for(i = 0; i < n; i++){
-        r[i].re = obj->psi[i].re + A[i].im * dt / hbar - A2[i].re * dt * dt / 4 / hbar / hbar;
-        r[i].im = obj->psi[i].im - A[i].re * dt / hbar - A2[i].im * dt * dt / 4 / hbar / hbar;
-    }
+
     double b = norm(r,n);
     printf("\n norm(b) = %14.10e\n",b);
 
+    evaluateM(M, r, w, h);
     for(i = 0; i < n; i++){
         _complex_sub(r[i], r[i], M[i]);
         p[i] = r[i];
@@ -124,11 +121,11 @@ void distribution_compute(distribution *obj)
 
     double rs = norm(r,n);
     printf("\n rsold = %14.10e\n",rs);
+    evaluateM(M, p, w, h);
     while(1){
         static complex_t alpha, beta, rAr, tmp;
         evaluateM(A, r, w, h);
         rAr = scalar(r,A,n);
-        evaluateM(M, p, w, h);
         tmp = scalar(M,M,n);
         _complex_div(alpha, rAr, tmp);
         for(i = 0; i < n; i++){
@@ -144,12 +141,13 @@ void distribution_compute(distribution *obj)
         tmp = scalar(r,A2,n);
         _complex_div(beta, tmp, rAr);
         for(i = 0; i < n; i++){
-            _complex_mul(p[i], p[i], beta);
-            _complex_add(p[i], p[i], r[i]);
-            _complex_mul(M[i], beta, M[i]);
-            _complex_add(M[i], M[i], A2[i]);
+            _complex_mul(tmp, p[i], beta);
+            _complex_add(p[i], r[i], tmp);
+            _complex_mul(tmp, beta, M[i]);
+            _complex_add(M[i], tmp, A2[i]);
         }
     }
+
     free(M);
     free(A);
     free(A2);

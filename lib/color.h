@@ -69,7 +69,6 @@ typedef struct{
 rgb8U_t d2rgb8U(double x)
 {
     double r,g,b;
-    r = g = b = 0;
     if(x<0) x += -floor(x)+1;
     if(x>=1) x -= floor(x);
     if(0<= x && x<1.0/6.0){

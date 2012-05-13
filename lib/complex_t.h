@@ -7,9 +7,9 @@ typedef struct{
    double re,im;
 } complex_t;
 
-static const complex_t COMPLEX_ZERO = {.re = 0, .im = 0};
-static const complex_t COMPLEX_ONE = {.re = 1, .im = 0};
-static const complex_t COMPLEX_I = {.re = 0, .im = 1};
+static const complex_t COMPLEX_ZERO = {.re = 0.0, .im = 0.0};
+static const complex_t COMPLEX_ONE = {.re = 1.0, .im = 0.0};
+static const complex_t COMPLEX_I = {.re = 0.0, .im = 1.0};
 
 /*
 * a=b*c (a,b,c complex)
@@ -52,7 +52,15 @@ static const complex_t COMPLEX_I = {.re = 0, .im = 1};
 */
 
 #define _complex_mod(a) \
-   sqrt((a).re*(a).re+(a).im*(a).im)
+   hypot((a).re,(a).im)
+
+
+/*
+* arg(a) (a complex)
+*/
+
+#define _complex_arg(a) \
+   atan2((a).im,(a).re)
 
 
 /*
@@ -95,7 +103,7 @@ complex_t scalar(complex_t *x, complex_t *y, int n)
 
 double norm(complex_t *x, int n)
 {
-    double tmp = 0;
+    double tmp = 0.0;
     int i;
     for(i = 0; i < n; i++)
         tmp += x[i].re * x[i].re + x[i].im * x[i].im;
@@ -119,8 +127,8 @@ complex_t laplacian2d(complex_t *matrix, int w, int h, int k)
     _complex_add(env, env, matrix[(k/w)*w+(k%w+w-1)%w]);
     _complex_add(env, env, matrix[((k/w+1)%h)*w+k%w]);
     _complex_add(env, env, matrix[((k/w+h-1)%h)*w+k%w]);
-    env.re = (env.re / 4 - matrix[k].re);
-    env.im = (env.im / 4 - matrix[k].im);
+    env.re = (env.re / 4.0 - matrix[k].re);
+    env.im = (env.im / 4.0 - matrix[k].im);
     return env;
 }
 
