@@ -17,7 +17,7 @@ void GLInit()
     glClearColor(0.0 ,0.0, 0.0, 0.0);
     glClear(GL_COLOR_BUFFER_BIT);
     glOrtho(0,pixels->width,0,pixels->height,0,1);
-    mouseF(GLUT_LEFT_BUTTON, GLUT_DOWN, pixels->width/2, pixels->height/2);
+    mouseF(GLUT_LEFT_BUTTON,GLUT_DOWN,pixels->width/2,pixels->height/2);
 }
 
 void displayF()
@@ -79,22 +79,24 @@ void keyboardF(unsigned char key, int mouseX, int mouseY)
 
 void mouseF(int button, int state, int x, int y)
 {
-    int n,viewport[4];
+    int i,j,viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
     y = viewport[3]-y;
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
-        double kx = 1.4e2, ky = 0, w = sqrt(kx*kx+ky*ky);
-        for(n = 0; n < pixels->size; n++){
-            double rx = (x-n%pixels->width), ry = (y-n/pixels->width);
-            pixels->psi[n].re += exp(-(rx*rx+ry*ry)/10000)*cos(rx*kx+ry*ky-w*time);
-            pixels->psi[n].im += exp(-(rx*rx+ry*ry)/10000)*sin(rx*kx+ry*ky-w*time);
-        }
+        for(i = 0; i < pixels->height; i++)
+            for(j = 0; j < pixels->width; j++) {
+                float xf = (j-x)*2.0/pixels->width;
+                float yf = (i-y)*2.0/pixels->height;
+                float d = hypotf(xf, yf) * 4.0;
+                float z = (1 - d * d) * expf(d * d / -2.0);
+                pixels->psi[i*pixels->width+j].re += z;
+            }
     }
 }
 
 int main(int argc, char *argv[])
 {
-    pixels = distribution_alloc(600,600);
+    pixels = distribution_alloc(100,100);
     time = modeView = isActive = 1;
     glutInit(&argc, argv);
     glutInitWindowSize(pixels->width,pixels->height); 

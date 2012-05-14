@@ -44,7 +44,7 @@ void setupTexture()
   // Create our datapoints, store it as bytes
   for(int i = 0; i < N; i++) {
     for(int j = 0; j < N; j++) {
-      double z = (complexSurface->psi[i*N+j]).re;
+      double z = _complex_mod(complexSurface->psi[i*N+j]);
       graph[i][j] = roundf(z * 127 + 128);
     }
   }

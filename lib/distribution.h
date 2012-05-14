@@ -6,22 +6,13 @@
 #include <string.h>
 #include "complex_t.h"
 
-#define WAVE
-#define GLOBAL
+//#define WAVE
 
-#ifdef GLOBAL
-double dt = (1e-1);
+double dt = (1);
 double mass = 1.0;
 double omega  = 1.0;
 double hbar = 1.0;
-double potential(double x,double y){ return 0.0;}//mass*omega*omega*((x)*(x)+(y)*(y))/2.0; }
-#else
-#define dt (1e-9)
-#define mass 1.0
-#define omega 1.0
-#define hbar 1.0
-#define potential(x,y) (mass*omega*omega*((x)*(x)+(y)*(y))/2.0)
-#endif
+double potential(double x,double y){ return mass*omega*omega*((x)*(x)+(y)*(y))/2.0; }
 
 typedef struct{
     int width,height,size;
@@ -83,6 +74,7 @@ void distribution_compute(distribution *obj)
 {
     int i, n = obj->size, w = obj->width, h = obj->height;
 #ifdef WAVE
+    normalize(obj->psi,n);
     complex_t tmp, *x = (complex_t*)malloc(n * sizeof(complex_t));
     memcpy(x, obj->psi, n * sizeof(complex_t));
     for(i = 0; i < n; i++){
@@ -94,7 +86,10 @@ void distribution_compute(distribution *obj)
     memcpy(obj->psi, x, n * sizeof(complex_t));
     free(x);
 #else
-    normalize(obj->psi,n);
+//    normalize(obj->psi,n);
+//    printf("\nnorm(psi)² = %14.10e\n",norm(obj->psi,n)*norm(obj->psi,n));
+//    printf(" <psi|psi> = %14.10e + i(%14.10e)\n",scalar(obj->psi,obj->psi,n).re,scalar(obj->psi,obj->psi,n).im);
+//    printf("|<psi|psi>| = %14.10e\n",_complex_mod(scalar(obj->psi,obj->psi,n)));
     complex_t *M = (complex_t*)malloc(n * sizeof(complex_t));
     complex_t *A = (complex_t*)malloc(n * sizeof(complex_t));
     complex_t *A2 = (complex_t*)malloc(n * sizeof(complex_t));
@@ -111,7 +106,7 @@ void distribution_compute(distribution *obj)
     }
 
     double b = norm(r,n);
-    printf("\n norm(b) = %14.10e\n",b);
+//    printf("\n norm(b) = %14.10e\n",b);
 
     evaluateM(M, r, w, h);
     for(i = 0; i < n; i++){
@@ -120,7 +115,7 @@ void distribution_compute(distribution *obj)
     }
 
     double rs = norm(r,n);
-    printf("\n rsold = %14.10e\n",rs);
+//    printf("\n rsold = %14.10e\n",rs);
     evaluateM(M, p, w, h);
     while(1){
         static complex_t alpha, beta, rAr, tmp;
@@ -135,8 +130,8 @@ void distribution_compute(distribution *obj)
             _complex_sub(r[i], r[i], tmp);
         }
         rs = norm(r,n);
-        printf(" rsnew = %14.10e\n",rs);
-        if(rs/b < 1e-6) break;
+//        printf(" rsnew = %14.10e\n rs/b = %14.10e\n",rs,rs/b);
+        if(rs/b < 1e-10) break;
         evaluateM(A2, r, w, h);
         tmp = scalar(r,A2,n);
         _complex_div(beta, tmp, rAr);

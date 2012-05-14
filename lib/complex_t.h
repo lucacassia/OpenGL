@@ -95,8 +95,8 @@ complex_t scalar(complex_t *x, complex_t *y, int n)
     complex_t tmp = COMPLEX_ZERO;
     int i;
     for(i = 0; i < n; i++){
-        x[i].im = -x[i].im;
-        _complex_mul(tmp,x[i],y[i]);
+        tmp.re += x[i].re * y[i].re + x[i].im * y[i].im;
+        tmp.im += x[i].re * y[i].im - x[i].im * y[i].re;
     }
     return tmp;
 }
