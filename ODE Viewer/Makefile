@@ -52,7 +52,7 @@ CFLAGS = -Wall -O -g -DSSE2
 
 SHELL=/bin/bash
 
-CC=g++
+CC=gcc
 
 PGMS= $(MAIN) $(MODULES)
 
