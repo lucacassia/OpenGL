@@ -6,9 +6,9 @@
 #include <string.h>
 #include "complex_t.h"
 
-//#define WAVE
+#define WAVE
 
-double dt = (1);
+double dt = 1.0;
 double mass = 1.0;
 double omega  = 1.0;
 double hbar = 1.0;
@@ -74,7 +74,6 @@ void distribution_compute(distribution *obj)
 {
     int i, n = obj->size, w = obj->width, h = obj->height;
 #ifdef WAVE
-    normalize(obj->psi,n);
     complex_t tmp, *x = (complex_t*)malloc(n * sizeof(complex_t));
     memcpy(x, obj->psi, n * sizeof(complex_t));
     for(i = 0; i < n; i++){

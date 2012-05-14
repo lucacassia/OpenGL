@@ -29,6 +29,9 @@ bool interpolate = false;
 bool clamp = false;
 bool rotate = false;
 bool polygonoffset = true;
+bool active = true;
+
+int modeView = 0;
 
 GLuint vbo[3];
 
@@ -44,7 +47,18 @@ void setupTexture()
   // Create our datapoints, store it as bytes
   for(int i = 0; i < N; i++) {
     for(int j = 0; j < N; j++) {
-      double z = _complex_mod(complexSurface->psi[i*N+j]);
+      double z = 0;
+      switch(modeView){
+        case 0:
+          z = _complex_mod(complexSurface->psi[i*N+j]);
+          break;
+        case 1:
+          z = (complexSurface->psi[i*N+j]).re;
+          break;
+        case 2:
+          z = (complexSurface->psi[i*N+j]).im;
+          break;
+      }
       graph[i][j] = roundf(z * 127 + 128);
     }
   }
@@ -187,9 +201,10 @@ int init_resources()
 
 void display()
 {
-  distribution_compute(complexSurface);
-
-  setupTexture();
+  if(active){
+    distribution_compute(complexSurface);
+    setupTexture();
+  }
 
   glUseProgram(program);
   glUniform1i(uniform_mytexture, 0);
@@ -272,6 +287,15 @@ void special(int key, int x, int y)
     case GLUT_KEY_F4:
       polygonoffset = !polygonoffset;
       break;
+    case GLUT_KEY_F5:
+      modeView = 0;
+      break;
+    case GLUT_KEY_F6:
+      modeView = 1;
+      break;
+    case GLUT_KEY_F7:
+      modeView = 2;
+      break;
     case GLUT_KEY_F11:
       glutFullScreenToggle();
       break;
@@ -299,7 +323,6 @@ void special(int key, int x, int y)
       scale = 1.0;
       break;
   }
-
   glutPostRedisplay();
 }
 
@@ -307,6 +330,19 @@ void free_resources()
 {
   distribution_free(complexSurface);
   glDeleteProgram(program);
+}
+
+void keyboard(unsigned char key, int x, int y)
+{
+    switch(key)
+    {
+        case 'q': case 'Q': case 27:
+            free_resources();
+            exit(EXIT_SUCCESS);
+        case ' ':
+            active =! active;
+            break;
+    }
 }
 
 int main(int argc, char* argv[]) {
@@ -349,6 +385,7 @@ int main(int argc, char* argv[]) {
     glutDisplayFunc(display);
     glutIdleFunc(display);
     glutSpecialFunc(special);
+    glutKeyboardFunc(keyboard);
     glutMainLoop();
   }
 

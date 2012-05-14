@@ -3,7 +3,7 @@ uniform vec4 color;
 uniform sampler2D mytexture;
 
 void main(void) {
-    float x = texture2D(mytexture, graph_coord.xy / 2.0 + 0.5).z;
+    float x = texture2D(mytexture, graph_coord.xy / 2.0 + 0.5).z - 0.5;
     vec4 fragment_color;
     if(x<0) x += -floor(x)+1;
     if(x>=1) x -= floor(x);
