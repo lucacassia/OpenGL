@@ -45,6 +45,7 @@ GLbyte graph[N][N];
 void setupTexture()
 {
   // Create our datapoints, store it as bytes
+  double max = 0;
   for(int i = 0; i < N; i++) {
     for(int j = 0; j < N; j++) {
       double z = 0;
@@ -59,7 +60,25 @@ void setupTexture()
           z = (complexSurface->psi[i*N+j]).im;
           break;
       }
-      graph[i][j] = roundf(z * 127 + 128);
+      if(fabs(z)>max)
+        max = fabs(z);
+    }
+  }
+  for(int i = 0; i < N; i++) {
+    for(int j = 0; j < N; j++) {
+      double z = 0;
+      switch(modeView){
+        case 0:
+          z = _complex_mod(complexSurface->psi[i*N+j]);
+          break;
+        case 1:
+          z = (complexSurface->psi[i*N+j]).re;
+          break;
+        case 2:
+          z = (complexSurface->psi[i*N+j]).im;
+          break;
+      }
+      graph[i][j] = roundf(z/max * 127 + 128);
     }
   }
 

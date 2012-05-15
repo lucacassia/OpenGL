@@ -14,8 +14,13 @@ plist b;
 void drawLine(plist *trail, rgb_t color)
 {
     glBegin(GL_LINE_STRIP);
-    glColor3d(color.r,color.g,color.b);
     while(trail != NULL){
+        double factor = 1;
+        if(trail->z <= 0)
+            factor = 0;
+        if(trail->z > 0 && trail->z < 50)
+            factor = trail->z/50;
+        glColor3d(color.r*factor,color.g*factor,color.b*factor);
         glVertex3d(trail->x,trail->y,trail->z);
         trail = trail->next;
     }
@@ -28,17 +33,18 @@ void drawCircle(plist head, double r, rgb_t color)
     glBegin(GL_POLYGON);
     int i;
     for(i = 0; i < 360; i++)
-        glVertex3d(head.y+r*cos(i*3.14159265/180), head.y+r*sin(i*3.14159265/180), head.z);
+        glVertex3d(head.x+r*cos(i*3.14159265/180), head.y+r*sin(i*3.14159265/180), head.z);
     glEnd();
 }
 
 void displayF()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
     rgb_t color;
     color.r = 0;
-    color.g = 96/255.0;
-    color.b = 173/255.0;
+    color.g = 96/173.0;
+    color.b = 1;
     drawLine(list, color);
     drawCircle(*list, 0.02, color);
     glutSwapBuffers();
