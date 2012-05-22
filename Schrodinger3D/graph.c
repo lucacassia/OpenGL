@@ -25,7 +25,7 @@ float offset_x = 0.0;
 float offset_y = 0.0;
 float scale = 1.0;
 
-bool interpolate = false;
+bool interpolate = true;
 bool clamp = false;
 bool rotate = false;
 bool polygonoffset = true;
@@ -370,11 +370,16 @@ int main(int argc, char* argv[]) {
 
   for(int i = 0; i < N; i++)
     for(int j = 0; j < N; j++) {
-      float x = i*2.0/N-1;
-      float y = j*2.0/N-1;
+      float x = i*2.0/(N-1)-1;
+      float y = j*2.0/(N-1)-1;
       float d = hypotf(x, y) * 4.0;
       float z = (1 - d * d) * expf(d * d / -2.0);
+      float s = 0.1;
+      float kx = -1e2;
+      float ky = 0;
       complexSurface->psi[i*N+j].re = z;
+      complexSurface->psi[i*N+j].re = cos(kx*x+ky*y)*expf(-((x-0.5)*(x-0.5)+y*y)/(2*s*s))/sqrt(2*3.1415926)/s;
+      complexSurface->psi[i*N+j].im = sin(kx*x+ky*y)*expf(-((x-0.5)*(x-0.5)+y*y)/(2*s*s))/sqrt(2*3.1415926)/s;
     }
 
   glutInit(&argc, argv);

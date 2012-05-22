@@ -7,12 +7,17 @@
 #include "complex_t.h"
 
 //#define WAVE
+//#define WELL
 
 double dt = 1.0;
 double mass = 1.0;
 double omega  = 1.0;
 double hbar = 1.0;
-double potential(double x,double y){ return mass*omega*omega*((x)*(x)+(y)*(y))/2.0; }
+double potential(double x,double y){
+    if(hypot(x,y)<0.1)
+        return -10;
+    return 0;
+}//{return mass*omega*omega*((x)*(x)+(y)*(y))/2.0; }
 
 typedef struct{
     int width,height,size;
@@ -50,8 +55,8 @@ complex_t hamiltonian(complex_t *matrix, int w, int h, int k)
     _complex_add(H, H, matrix[(k/w)*w+(k%w+w-1)%w]);
     _complex_add(H, H, matrix[((k/w+1)%h)*w+k%w]);
     _complex_add(H, H, matrix[((k/w+h-1)%h)*w+k%w]);
-    H.re = -hbar*hbar*(H.re - 4.0*matrix[k].re)/(2.0*mass) + potential((k%w)*2.0/w-1.0, (k/w)*2.0/h-1.0) * matrix[k].re;
-    H.im = -hbar*hbar*(H.im - 4.0*matrix[k].im)/(2.0*mass) + potential((k%w)*2.0/w-1.0, (k/w)*2.0/h-1.0) * matrix[k].im;
+    H.re = -hbar*hbar*(H.re - 4.0*matrix[k].re)/(2.0*mass) + potential((k%w)*2.0/(w-1)-1.0, (k/w)*2.0/(h-1)-1.0) * matrix[k].re;
+    H.im = -hbar*hbar*(H.im - 4.0*matrix[k].im)/(2.0*mass) + potential((k%w)*2.0/(w-1)-1.0, (k/w)*2.0/(h-1)-1.0) * matrix[k].im;
     return H;
 }
 
@@ -72,7 +77,7 @@ void evaluateM(complex_t *M, complex_t *x, int w, int h)
 
 void distribution_compute(distribution *obj)
 {
-    int i,j, n = obj->size, w = obj->width, h = obj->height;
+    int i, n = obj->size, w = obj->width, h = obj->height;
 #ifdef WAVE
     complex_t tmp, *x = (complex_t*)malloc(n * sizeof(complex_t));
     memcpy(x, obj->psi, n * sizeof(complex_t));
@@ -148,10 +153,12 @@ void distribution_compute(distribution *obj)
     free(r);
     free(p);
 #endif
+#ifdef WELL
     for(i = 0; i < h; i++)
         for(j = 0; j < w; j++)
             if(hypot(i*2.0/h-1,j*2.0/w-1)>1)
                 obj->psi[i*w+j] = COMPLEX_ZERO;
+#endif
 }
 
 #endif
