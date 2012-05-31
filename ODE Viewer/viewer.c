@@ -1,35 +1,63 @@
 #include <GL/freeglut.h>
+#include <stdio.h>
 #include "ode.h"
-#include "color.h"
 
+int mouseDown = 0;
 int active = 1;
+
+int width = 500;
+int height = 500;
+
+float xrot = 0.0f;
+float yrot = 0.0f;
+
+float xdiff = 0.0f;
+float ydiff = 0.0f;
 
 plist *list = NULL;
 
-float scalef = 1.5;
-float ds;
-float a;
-plist b;
+float scale = 1.5f;
+float shift = 0.05f;
+float scaling = 1.0f;
+plist translation = {.x = 0, .y = 0, .z = 0};
 
-void drawLine(plist *trail, rgb_t color)
+void savePPM(unsigned char *frame)
+{
+    FILE *f = fopen("image.ppm", "wb");
+    fprintf(f, "P6\n%d %d\n255\n", width, height);
+    fwrite(frame, sizeof(unsigned char), 3 * width * height, f);
+    fclose(f);
+}
+
+void saveToFile(plist *trail)
+{
+    FILE *f = fopen("image.dat", "w");
+    while(trail != NULL){
+        fprintf(f, "%lf\t%lf\t%lf\n", trail->x, trail->y, trail->z);
+        trail = trail->next;
+    }
+    fclose(f);
+}
+
+void drawLine(plist *trail, double *color)
 {
     glBegin(GL_LINE_STRIP);
     while(trail != NULL){
         double factor = 1;
         if(trail->z <= 0)
-            factor = 0;
+            factor = 1;
         if(trail->z > 0 && trail->z < 50)
-            factor = trail->z/50;
-        glColor3d(color.r*factor,color.g*factor,color.b*factor);
+            factor = 1-trail->z/50;
+        glColor3d(color[0]*factor,color[1]*factor,color[2]*factor);
         glVertex3d(trail->x,trail->y,trail->z);
         trail = trail->next;
     }
     glEnd();
 }
 
-void drawCircle(plist head, double r, rgb_t color)
+void drawCircle(plist head, double r, double *color)
 {
-    glColor3d(color.r,color.g,color.b);
+    glColor3d(color[0],color[1],color[2]);
     glBegin(GL_POLYGON);
     int i;
     for(i = 0; i < 360; i++)
@@ -37,157 +65,186 @@ void drawCircle(plist head, double r, rgb_t color)
     glEnd();
 }
 
-void displayF()
+int init()
+{
+    plist_add_front(&list,0.5,0,0,0);
+
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    glClearDepth(1.0f);
+
+    return 1;
+}
+
+void display()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
-    rgb_t color;
-    color.r = 0;
-    color.g = 96/173.0;
-    color.b = 1;
+    glLoadIdentity();
+
+    gluLookAt(
+    0.0f, 0.0f, 3.0f,
+    0.0f, 0.0f, 0.0f,
+    0.0f, 1.0f, 0.0f);
+
+    glScalef(scaling,scaling,scaling);
+    glTranslatef(translation.x,translation.y,translation.z);
+    glRotatef(xrot, 1.0f, 0.0f, 0.0f);
+    glRotatef(yrot, 0.0f, 1.0f, 0.0f);
+
+    double color[3] = {0, 0.134, 1};
     drawLine(list, color);
     drawCircle(*list, 0.02, color);
+
+    glFlush();
     glutSwapBuffers();
 }
 
-void reshapeF(int w,int h)
+void resize(int w, int h)
 {
-    glViewport(0,0,w,h);
+    width = w;
+    height = h;
+
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(-w*a/h+b.x,w*a/h+b.x,-a+b.y,a+b.y,a+b.z,-a+b.z);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glClearColor(1,1,1,0);
+
+    glViewport(0, 0, w, h);
+
+    gluPerspective(45.0f, 1.0f * w / h, 1.0f, 100.0f);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 }
 
-void init()
+void idle()
 {
-    plist_add_front(&list,0,0,0,0,0,0,0);
+    if(active)
+        plist_evolve_ode(&list, NULL);
 
-    active = 1;
-    b.x = b.y = b.z = 0;
-    ds = 0.05;
-    a = 1;
-
-    int viewport[4];
-    glGetIntegerv(GL_VIEWPORT, viewport);
-    reshapeF(viewport[2],viewport[3]);
+    glutPostRedisplay();
 }
 
-void keyboardF(unsigned char key, int x, int y)
+void keyboard(unsigned char key, int x, int y)
 {
     switch(key)
     {
         case '+':
-            glTranslatef(b.x,b.y,b.z);
-            glScalef(scalef,scalef,scalef);
-            glTranslatef(-b.x,-b.y,-b.z);
-            ds/=scalef;
-            a/=scalef;
+            shift /= scale;
+            scaling *= scale;
             break;
         case '-':
-            glTranslatef(b.x,b.y,b.z);
-            glScalef(1/scalef,1/scalef,1/scalef);
-            glTranslatef(-b.x,-b.y,-b.z);
-            ds*=scalef;
-            a*=scalef;
+            shift *= scale;
+            scaling /= scale;
             break;
         case 'p': case 'P': case ' ':
-            active=!active;
+            active = !active;
             break;
         case 'f': case 'F':
             glutFullScreenToggle();
             break;
-        case 'r': case 'R':
-            init();
-            break;
         case 'q': case 'Q': case 27:
+            plist_erase(&list);
             exit(0);
             break;
     }
 }
 
-void specialKeyboardF(int key, int x, int y)
+void specialKeyboard(int key, int x, int y)
 {
+    unsigned char *frame = NULL;
     switch(key)
     {
+        case GLUT_KEY_F1:
+            frame = (unsigned char*)malloc(3*width*height*sizeof(unsigned char));
+            glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,frame);
+            savePPM(frame);
+            free(frame);
+            break;
+        case GLUT_KEY_F2:
+            saveToFile(list);
+            break;
         case GLUT_KEY_F11:
             glutFullScreenToggle();
             break;
         case GLUT_KEY_UP:
-            glTranslatef(0,-ds,0);
-            b.y+=ds;
+            translation.y -= shift;
             break;
         case GLUT_KEY_DOWN:
-            glTranslatef(0,ds,0);
-            b.y-=ds;
+            translation.y += shift;
             break;
         case GLUT_KEY_LEFT:
-            glTranslatef(ds,0,0);
-            b.x-=ds;
+            translation.x += shift;
             break;
         case GLUT_KEY_RIGHT:
-            glTranslatef(-ds,0,0);
-            b.x+=ds;
+            translation.x -= shift;
             break;
         case GLUT_KEY_PAGE_UP:
-            glTranslatef(0,0,-ds);
-            b.z+=ds;
+            translation.z -= shift;
             break;
         case GLUT_KEY_PAGE_DOWN:
-            glTranslatef(0,0,ds);
-            b.z-=ds;
+            translation.z += shift;
             break;
     }
 }
 
 plist getPosition(int x, int y)
 {
-    int viewport[4];
-    glGetIntegerv(GL_VIEWPORT, viewport);
-    y = viewport[3]-y;
     plist tmp;
-    tmp.x = ((x*2.0/viewport[2]-1)*viewport[2]/viewport[3]) * a + b.x;
-    tmp.y = (2.0*y/viewport[3]-1) * a + b.y;
-    tmp.z = b.z;
+    tmp.x = scaling * ((x*2.0/width-1)*width)/height + translation.x;
+    tmp.y = scaling * (y*2.0/height-1) + translation.y;
+    tmp.z = translation.z;
     tmp.t = 0;
     return tmp;
 }
 
-void mouseF(int button, int state, int x, int y)
+void mouse(int button, int state, int x, int y)
 {
-    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+    if ((mouseDown = (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)))
     {
-        plist tmp = getPosition(x,y);
+        xdiff = x - yrot;
+        ydiff = -y + xrot;
+    }
+    if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
+    {
+        plist tmp = getPosition(x,height-y);
         plist_erase(&list);
-        plist_add_front(&list, tmp.x, tmp.y, tmp.z, 0, 0, 0, tmp.t);
+        plist_add_front(&list, tmp.x, tmp.y, tmp.z, tmp.t);
     }
 }
 
-void idleF(void)
+void mouseMotion(int x, int y)
 {
-    if(active)
-        plist_evolve_ode(&list, NULL);
-    glutPostRedisplay();
+    if (mouseDown)
+    {
+        yrot = x - xdiff;
+        xrot = y + ydiff;
+
+        glutPostRedisplay();
+    }
 }
 
 int main(int argc, char *argv[])
 {
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_RGB);
-    glutInitWindowSize(500, 500);
-    glutCreateWindow("ODE Viewer");
 
-    init();
+    glutInitWindowSize(width, height);
 
-    glutDisplayFunc(displayF);
-    glutIdleFunc(idleF);
-    glutKeyboardFunc(keyboardF);
-    glutSpecialFunc(specialKeyboardF);
-    glutMouseFunc(mouseF);
-    glutReshapeFunc(reshapeF);
+    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
+
+    glutCreateWindow("ODE");
+
+    glutDisplayFunc(display);
+    glutKeyboardFunc(keyboard);
+    glutSpecialFunc(specialKeyboard);
+    glutMouseFunc(mouse);
+    glutMotionFunc(mouseMotion);
+    glutReshapeFunc(resize);
+    glutIdleFunc(idle);
+
+    if (!init())
+        return 1;
 
     glutMainLoop();
+
     return 0;
 }
-

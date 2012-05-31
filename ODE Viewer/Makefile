@@ -28,17 +28,17 @@ MODULES =
 
 MDIR = 
 
-VPATH = ../lib
+VPATH = 
 
 
 # additional include directories
 
-INCPATH = ../lib
+INCPATH = 
 
 
 # additional libraries to be included 
  
-LIBS = m glut GL X11
+LIBS = m glut GL X11 GLU
 
 LIBPATH =
 

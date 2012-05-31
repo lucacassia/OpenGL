@@ -1,7 +1,8 @@
 #include<GL/glut.h>
 
-bool fullscreen = false;
-bool mouseDown = false;
+int fullscreen = 0;
+int mouseDown = 0;
+int active = 1;
 
 float xrot = 0.0f;
 float yrot = 0.0f;
@@ -51,15 +52,15 @@ void drawBox()
     glEnd();
 }
 
-bool init()
+int init()
 {
-    glClearColor(0.93f, 0.93f, 0.93f, 0.0f);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
     glClearDepth(1.0f);
 
-    return true;
+    return 1;
 }
 
 void display()
@@ -109,14 +110,16 @@ void keyboard(unsigned char key, int x, int y)
 {
     switch(key)
     {
-        case 27 : 
+        case 27 : case 'q' : case 'Q' :
             exit(1); break;
+        case ' ' :
+            active = !active; break;
     }
 }
 
 void specialKeyboard(int key, int x, int y)
 {
-    if (key == GLUT_KEY_F1)
+    if (key == GLUT_KEY_F11)
     {
         fullscreen = !fullscreen;
 
@@ -134,13 +137,13 @@ void mouse(int button, int state, int x, int y)
 {
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
     {
-        mouseDown = true;
+        mouseDown = 1;
 
         xdiff = x - yrot;
         ydiff = -y + xrot;
     }
     else
-        mouseDown = false;
+        mouseDown = 0;
 }
 
 void mouseMotion(int x, int y)
@@ -171,7 +174,7 @@ int main(int argc, char *argv[])
     glutMouseFunc(mouse);
     glutMotionFunc(mouseMotion);
     glutReshapeFunc(resize);
-//    glutIdleFunc(idle);
+    glutIdleFunc(idle);
 
     if (!init())
         return 1;

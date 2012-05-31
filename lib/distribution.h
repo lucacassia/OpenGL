@@ -15,7 +15,7 @@ double omega  = 1.0;
 double hbar = 1.0;
 double potential(double x,double y){
     if(hypot(x,y)<0.1)
-        return -10;
+        return -100;
     return 0;
 }//{return mass*omega*omega*((x)*(x)+(y)*(y))/2.0; }
 
@@ -46,6 +46,19 @@ void distribution_free(distribution *obj)
     free(obj->phi);
     free(obj->source);
     free(obj);
+}
+
+void distribution_init(distribution *obj, double s, double kx, double ky)
+{
+    double x,y;
+    int i,j;
+    for(i = 0; i < obj->height; i++)
+        for(j = 0; j < obj->width; j++) {
+            x = i*2.0/(obj->width-1)-1;
+            y = j*2.0/(obj->height-1)-1;
+            obj->psi[i*obj->width+j].re = cos(kx*x+ky*y)*expf(-((x-0.5)*(x-0.5)+y*y)/(2*s*s))/sqrt(2*3.1415926)/s;
+            obj->psi[i*obj->width+j].im = sin(kx*x+ky*y)*expf(-((x-0.5)*(x-0.5)+y*y)/(2*s*s))/sqrt(2*3.1415926)/s;
+    }
 }
 
 complex_t hamiltonian(complex_t *matrix, int w, int h, int k)

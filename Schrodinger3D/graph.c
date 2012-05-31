@@ -32,6 +32,8 @@ bool polygonoffset = true;
 bool active = true;
 
 int modeView = 0;
+int width = 640;
+int height = 480;
 
 GLuint vbo[3];
 
@@ -41,6 +43,15 @@ struct point {
 };
 
 GLbyte graph[N][N];
+unsigned char *frame = NULL;
+
+void saveToFile(unsigned char *frame)
+{
+    FILE *f = fopen("image.ppm", "wb");
+    fprintf(f, "P6\n%d %d\n255\n", width, height);
+    fwrite(frame, 1, 3 * width * height, f);
+    fclose(f);
+}
 
 void setupTexture()
 {
@@ -224,6 +235,10 @@ void display()
     distribution_compute(complexSurface);
     setupTexture();
   }
+      frame = (unsigned char*)malloc(3*width*height*sizeof(unsigned char));
+      glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,frame);
+      fwrite(frame, sizeof(char), 3*(complexSurface->size), stdout);
+      free(frame);
 
   glUseProgram(program);
   glUniform1i(uniform_mytexture, 0);
@@ -315,6 +330,12 @@ void special(int key, int x, int y)
     case GLUT_KEY_F7:
       modeView = 2;
       break;
+    case GLUT_KEY_F8:
+      frame = (unsigned char*)malloc(3*width*height*sizeof(float));
+      glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,frame);
+      saveToFile(frame);
+      free(frame);
+      break;
     case GLUT_KEY_F11:
       glutFullScreenToggle();
       break;
@@ -367,24 +388,11 @@ void keyboard(unsigned char key, int x, int y)
 int main(int argc, char* argv[]) {
 
   complexSurface = distribution_alloc(N,N);
-
-  for(int i = 0; i < N; i++)
-    for(int j = 0; j < N; j++) {
-      float x = i*2.0/(N-1)-1;
-      float y = j*2.0/(N-1)-1;
-      float d = hypotf(x, y) * 4.0;
-      float z = (1 - d * d) * expf(d * d / -2.0);
-      float s = 0.1;
-      float kx = -1e2;
-      float ky = 0;
-      complexSurface->psi[i*N+j].re = z;
-      complexSurface->psi[i*N+j].re = cos(kx*x+ky*y)*expf(-((x-0.5)*(x-0.5)+y*y)/(2*s*s))/sqrt(2*3.1415926)/s;
-      complexSurface->psi[i*N+j].im = sin(kx*x+ky*y)*expf(-((x-0.5)*(x-0.5)+y*y)/(2*s*s))/sqrt(2*3.1415926)/s;
-    }
+  distribution_init(complexSurface,0.1,-100,0);
 
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGBA|GLUT_DEPTH|GLUT_DOUBLE);
-  glutInitWindowSize(640, 480);
+  glutInitWindowSize(width, height);
   glutCreateWindow("graph");
 
   GLenum glew_status = glewInit();
