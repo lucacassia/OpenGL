@@ -19,7 +19,9 @@ plist *list = NULL;
 float scale = 1.5f;
 float shift = 0.05f;
 float scaling = 1.0f;
-plist translation = {.x = 0, .y = 0, .z = 0};
+plist translation = {.x = 0.0f, .y = 0.0f, .z = 0.0f};
+plist haxis = {.x = 1.0f, .y = 0.0f, .z = 0.0f};
+plist vaxis = {.x = 0.0f, .y = 1.0f, .z = 0.0f};
 
 void savePPM(unsigned char *frame)
 {
@@ -89,8 +91,8 @@ void display()
 
     glScalef(scaling,scaling,scaling);
     glTranslatef(translation.x,translation.y,translation.z);
-    glRotatef(xrot, 1.0f, 0.0f, 0.0f);
-    glRotatef(yrot, 0.0f, 1.0f, 0.0f);
+    glRotatef(xrot, haxis.x, haxis.y, haxis.z);
+    glRotatef(yrot, vaxis.x, vaxis.y, vaxis.z);
 
     double color[3] = {0, 0.134, 1};
     drawLine(list, color);
