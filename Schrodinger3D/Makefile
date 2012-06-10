@@ -38,7 +38,7 @@ INCPATH = ../lib
 
 # additional libraries to be included 
  
-LIBS = m glut GL X11 GLEW
+LIBS = m glut GL X11 GLEW GLU
 
 LIBPATH =
 
@@ -52,7 +52,7 @@ CFLAGS = -Wall -O -g -DSSE2
 
 SHELL=/bin/bash
 
-CC=g++
+CC=gcc
 
 PGMS= $(MAIN) $(MODULES)
 

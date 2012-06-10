@@ -71,7 +71,7 @@ class astroList{
             for(int j = 0 ; j < planets.size() ; j++){
                 if(i!=j){
                     point r(clone.planets[j].pos - clone.planets[i].pos);
-                    planets[i].speed += r*gravity*planets[j].mass/(r.mod()*r.mod()*r.mod());
+                    planets[i].speed += r*gravity*planets[j].mass/pow(r.mod(),3);
                 }
                 planets[i].pos += planets[i].speed;
             }

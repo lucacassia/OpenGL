@@ -6,18 +6,33 @@
 #include <string.h>
 #include "complex_t.h"
 
-//#define WAVE
-//#define WELL
+#define WAVE
 
 double dt = 1.0;
 double mass = 1.0;
 double omega  = 1.0;
 double hbar = 1.0;
-double potential(double x,double y){
+
+double harmonic(double x,double y){ return mass*omega*omega*((x)*(x)+(y)*(y))/2.0; }
+
+double mix(double x,double y){
+    if(hypot(x,y)<0.25)
+        return -0.05;
+    if(hypot(x,y)<0.5)
+	return 0.05;
+    else
+        return -mass*omega*omega*((x)*(x)+(y)*(y))/2.0;
+}
+
+double well(double x,double y){
     if(hypot(x,y)<0.1)
         return -100;
     return 0;
-}//{return mass*omega*omega*((x)*(x)+(y)*(y))/2.0; }
+}
+
+double coscos(double x,double y){return -cos(x*4*atan(1))-cos(y*4*atan(1));}
+
+double (*potential)(double,double) = coscos;
 
 typedef struct{
     int width,height,size;
@@ -56,8 +71,8 @@ void distribution_init(distribution *obj, double s, double kx, double ky)
         for(j = 0; j < obj->width; j++) {
             x = i*2.0/(obj->width-1)-1;
             y = j*2.0/(obj->height-1)-1;
-            obj->psi[i*obj->width+j].re = cos(kx*x+ky*y)*expf(-((x-0.5)*(x-0.5)+y*y)/(2*s*s))/sqrt(2*3.1415926)/s;
-            obj->psi[i*obj->width+j].im = sin(kx*x+ky*y)*expf(-((x-0.5)*(x-0.5)+y*y)/(2*s*s))/sqrt(2*3.1415926)/s;
+            obj->psi[i*obj->width+j].re = cos(kx*x+ky*y)*expf(-(pow(y-0.5,2)+pow(x-0.5,2))/(2*s*s))/sqrt(2*3.1415926)/s;
+            obj->psi[i*obj->width+j].im = sin(kx*x+ky*y)*expf(-(pow(y-0.5,2)+pow(x-0.5,2))/(2*s*s))/sqrt(2*3.1415926)/s;
     }
 }
 
@@ -103,10 +118,8 @@ void distribution_compute(distribution *obj)
     memcpy(obj->psi, x, n * sizeof(complex_t));
     free(x);
 #else
-//    normalize(obj->psi,n);
-//    printf("\nnorm(psi)² = %14.10e\n",norm(obj->psi,n)*norm(obj->psi,n));
-//    printf(" <psi|psi> = %14.10e + i(%14.10e)\n",scalar(obj->psi,obj->psi,n).re,scalar(obj->psi,obj->psi,n).im);
-//    printf("|<psi|psi>| = %14.10e\n",_complex_mod(scalar(obj->psi,obj->psi,n)));
+    normalize(obj->psi,n);
+
     complex_t *M = (complex_t*)malloc(n * sizeof(complex_t));
     complex_t *A = (complex_t*)malloc(n * sizeof(complex_t));
     complex_t *A2 = (complex_t*)malloc(n * sizeof(complex_t));
@@ -123,7 +136,6 @@ void distribution_compute(distribution *obj)
     }
 
     double b = norm(r,n);
-//    printf("\n norm(b) = %14.10e\n",b);
 
     evaluateM(M, r, w, h);
     for(i = 0; i < n; i++){
@@ -132,7 +144,6 @@ void distribution_compute(distribution *obj)
     }
 
     double rs = norm(r,n);
-//    printf("\n rsold = %14.10e\n",rs);
     evaluateM(M, p, w, h);
     while(1){
         static complex_t alpha, beta, rAr, tmp;
@@ -147,8 +158,7 @@ void distribution_compute(distribution *obj)
             _complex_sub(r[i], r[i], tmp);
         }
         rs = norm(r,n);
-//        printf(" rsnew = %14.10e\n rs/b = %14.10e\n",rs,rs/b);
-        if(rs/b < 1e-10) break;
+        if(rs/b < 1e-6) break;
         evaluateM(A2, r, w, h);
         tmp = scalar(r,A2,n);
         _complex_div(beta, tmp, rAr);
@@ -165,13 +175,7 @@ void distribution_compute(distribution *obj)
     free(A2);
     free(r);
     free(p);
-#endif
-#ifdef WELL
-    for(i = 0; i < h; i++)
-        for(j = 0; j < w; j++)
-            if(hypot(i*2.0/h-1,j*2.0/w-1)>1)
-                obj->psi[i*w+j] = COMPLEX_ZERO;
+
 #endif
 }
-
 #endif
