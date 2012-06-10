@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <GL/glew.h>
-#include <GL/freeglut.h>
+#include <GL/glut.h>
 #include "shader_utils.h"
 #include "distribution.h"
 
@@ -44,6 +44,7 @@ int active = 1;
 int modeView = 0;
 int width = 640;
 int height = 480;
+int grid = 150;
 
 GLuint vbo[3];
 
@@ -102,13 +103,13 @@ void setupTexture()
         graph
     );
 
-    // Create an array for 101 * 101 vertices
-    struct point vertices[101][101];
+    // Create an array for (grid+1) * (grid+1) vertices
+    struct point vertices[(grid+1)][(grid+1)];
 
-    for(i = 0; i < 101; i++) {
-        for(j = 0; j < 101; j++) {
-            vertices[i][j].x = (j - 50) / 50.0;
-            vertices[i][j].y = (i - 50) / 50.0;
+    for(i = 0; i < (grid+1); i++) {
+        for(j = 0; j < (grid+1); j++) {
+            vertices[i][j].x = (j - (grid/2)) / (grid/2.0);
+            vertices[i][j].y = (i - (grid/2)) / (grid/2.0);
         }
     }
 
@@ -117,38 +118,35 @@ void setupTexture()
     glBufferData(GL_ARRAY_BUFFER, sizeof vertices, vertices, GL_STATIC_DRAW);
 
     // Create an array of indices into the vertex array that traces both horizontal and vertical lines
-    GLushort indices[100 * 101 * 6];
-    i = 0;
+    GLushort indices[grid * (grid+1) * 6];
 
-    for(y = 0; y < 100; y++) {
-        for(x = 0; x < 100; x++) {
-            indices[i++] = y * 101 + x;
-            indices[i++] = y * 101 + x + 1;
+    for(i = y = 0; y < grid; y++) {
+        for(x = 0; x < grid; x++) {
+            indices[i++] = y * (grid+1) + x;
+            indices[i++] = y * (grid+1) + x + 1;
         }
     }
 
-    for(x = 0; x < 101; x++) {
-        for(y = 0; y < 100; y++) {
-            indices[i++] = y * 101 + x;
-            indices[i++] = (y + 1) * 101 + x;
+    for(x = 0; x < (grid+1); x++) {
+        for(y = 0; y < grid; y++) {
+            indices[i++] = y * (grid+1) + x;
+            indices[i++] = (y + 1) * (grid+1) + x;
         }
     }
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 100 * 101 * 4 * sizeof *indices, indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, grid * (grid+1) * 4 * sizeof *indices, indices, GL_STATIC_DRAW);
 
     // Create another array of indices that describes all the triangles needed to create a completely filled surface
-    i = 0;
+    for(i = y = 0; y < (grid+1); y++) {
+        for(x = 0; x < grid; x++) {
+            indices[i++] = y * (grid+1) + x;
+            indices[i++] = y * (grid+1) + x + 1;
+            indices[i++] = (y + 1) * (grid+1) + x + 1;
 
-    for(y = 0; y < 101; y++) {
-        for(x = 0; x < 100; x++) {
-            indices[i++] = y * 101 + x;
-            indices[i++] = y * 101 + x + 1;
-            indices[i++] = (y + 1) * 101 + x + 1;
-
-            indices[i++] = y * 101 + x;
-            indices[i++] = (y + 1) * 101 + x + 1;
-            indices[i++] = (y + 1) * 101 + x;
+            indices[i++] = y * (grid+1) + x;
+            indices[i++] = (y + 1) * (grid+1) + x + 1;
+            indices[i++] = (y + 1) * (grid+1) + x;
         }
     }
 
@@ -159,7 +157,6 @@ void setupTexture()
 
 int init_resources()
 {
-
     int vertex_texture_units;
     glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &vertex_texture_units);
     if(!vertex_texture_units) {
@@ -170,8 +167,8 @@ int init_resources()
     GLint link_ok = GL_FALSE;
 
     GLuint vs, fs;
-    if ((vs = create_shader("graph.v.glsl", GL_VERTEX_SHADER))   == 0) return 0;
-    if ((fs = create_shader("graph.f.glsl", GL_FRAGMENT_SHADER)) == 0) return 0;
+    if ((vs = create_shader("v.glsl", GL_VERTEX_SHADER))   == 0) return 0;
+    if ((fs = create_shader("f.glsl", GL_FRAGMENT_SHADER)) == 0) return 0;
 
     program = glCreateProgram();
     glAttachShader(program, vs);
@@ -305,7 +302,7 @@ void display()
     glVertexAttribPointer(attribute_coord2d, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[2]);
-    glDrawElements(GL_TRIANGLES, 100 * 100 * 6, GL_UNSIGNED_SHORT, 0);
+    glDrawElements(GL_TRIANGLES, grid * grid * 6, GL_UNSIGNED_SHORT, 0);
 
     glPolygonOffset(0, 0);
     glDisable(GL_POLYGON_OFFSET_FILL);
@@ -315,7 +312,7 @@ void display()
     glUniform4fv(uniform_color, 1, bright);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
-    glDrawElements(GL_LINES, 100 * 101 * 4, GL_UNSIGNED_SHORT, 0);
+    glDrawElements(GL_LINES, grid * (grid+1) * 4, GL_UNSIGNED_SHORT, 0);
 
     /* Stop using the vertex buffer object */
     glDisableVertexAttribArray(attribute_coord2d);
@@ -357,9 +354,6 @@ void special(int key, int x, int y)
             glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,frame);
             savePPM(frame);
             free(frame);
-            break;
-        case GLUT_KEY_F11:
-            glutFullScreenToggle();
             break;
         case GLUT_KEY_LEFT:
             texture_offset_x -= 0.03;
@@ -408,8 +402,8 @@ void mouse(int button, int state, int x, int y)
 void motion(int x, int y)
 {
     if (mouse_down) {
-        xrot = (x-mouse_x)*45.0/500;
-        yrot = (y-mouse_y)*PI/500/2.0;
+        xrot = (x-mouse_x)*45.0/640;
+        yrot = (y-mouse_y)*PI/480/2.0;
         glutPostRedisplay();
     }
 }
