@@ -1,10 +1,24 @@
 #include "Julia.h"
 #include <GL/freeglut.h>
+#include <stdio.h>
 
 #define PI 3.141592654
 
 Julia julia;
 float phi[] = {0,0,0};
+
+void savePPM()
+{
+    unsigned char *frame = (unsigned char*)malloc(3*julia.W()*julia.H()*sizeof(unsigned char));
+    glReadPixels(0,0,julia.W(),julia.H(),GL_RGB,GL_UNSIGNED_BYTE,frame);
+
+    FILE *f = fopen("image.ppm", "wb");
+    fprintf(f, "P6\n%d %d\n255\n", julia.W(), julia.H());
+    fwrite(frame, sizeof(unsigned char), 3 * julia.W() * julia.H(), f);
+    fclose(f);
+
+    free(frame);
+}
 
 void GLInit()
 {
@@ -43,8 +57,12 @@ void idleF()
 
 void keyboardF(unsigned char key, int mouseX, int mouseY)
 {
+
     switch(key)
     {
+        case 'p': case 'P':
+            savePPM();
+            break;
         case 'q': case 'Q': case 27:
             exit(0);
         case ' ':
