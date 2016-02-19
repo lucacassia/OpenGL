@@ -12,12 +12,9 @@ typedef struct{
 
 complex_t map(complex_t z)
 {
-    int n; complex_t ctmp; double rtmp;
-    for(n = 0; n < 100; n++){
-        _complex_exp(ctmp,z);
-        z.re = ctmp.re + 2;
-        z.im = ctmp.im + 5;
-    }
+    complex_t tmp;
+    _complex_div(tmp,COMPLEX_ONE,z);
+    _complex_exp(z,tmp);
     return z;
 }
 
@@ -29,8 +26,9 @@ void matrix_compute(matrix_t *obj)
             complex_t z,tmp;
             z.re = obj->focus.re+(j+(1-obj->width)/2)/obj->zoom;
             z.im = obj->focus.im+(i+(1-obj->height)/2)/obj->zoom;
-//            _complex_div(tmp,COMPLEX_ONE,z);
-//            _complex_exp(z,tmp);
+            _complex_div(tmp,COMPLEX_ONE,z);
+            _complex_exp(z,tmp);
+ 
             obj->pixels[i*obj->width+j] = _complex_mod(map(z));
         }
 }
