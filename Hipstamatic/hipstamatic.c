@@ -12,6 +12,12 @@ typedef struct{
     int jpeg_color_space;
 }image_t;
 
+typedef struct{
+    float * raw_image;
+    int image_width;
+    int image_height;
+}image_HSB_t;
+
 image_t read_JPEG_file( char *filename )
 {
 
@@ -153,6 +159,130 @@ void imageAdd(image_t image, float r, float g, float b)
     }
 }
 
+image_HSB_t imageRGBtoHSB(image_t image)
+{
+    image_HSB_t converted_image;
+    converted_image.image_width = image.image_width;
+    converted_image.image_height = image.image_height;
+    converted_image.raw_image = NULL;
+
+    if(image.jpeg_color_space != JCS_RGB) return converted_image;
+
+    int image_size = image.image_width * image.image_height;
+    converted_image.raw_image = (float *) malloc( 3 * image_size * sizeof(float) );
+
+    int component;
+    for(component = 0; component < image_size; component++){
+
+        float hue, saturation, brightness;
+        int r = image.raw_image[3*component+0];
+        int g = image.raw_image[3*component+1];
+        int b = image.raw_image[3*component+2];
+
+        int cmax = (r > g) ? r : g;
+        if (b > cmax) cmax = b;
+        int cmin = (r < g) ? r : g;
+        if (b < cmin) cmin = b;
+
+        brightness = ((float) cmax) / 255.0f;
+        if (cmax != 0)
+            saturation = ((float) (cmax - cmin)) / ((float) cmax);
+        else
+            saturation = 0;
+        if (saturation == 0)
+            hue = 0;
+        else{
+            float redc = ((float) (cmax - r)) / ((float) (cmax - cmin));
+            float greenc = ((float) (cmax - g)) / ((float) (cmax - cmin));
+            float bluec = ((float) (cmax - b)) / ((float) (cmax - cmin));
+            if (r == cmax)
+                hue = bluec - greenc;
+            else if (g == cmax)
+                hue = 2.0f + redc - bluec;
+            else
+                hue = 4.0f + greenc - redc;
+            hue = hue / 6.0f;
+            if (hue < 0)
+                hue = hue + 1.0f;
+        }
+
+        converted_image.raw_image[3*component+0] = hue;
+        converted_image.raw_image[3*component+1] = saturation;
+        converted_image.raw_image[3*component+2] = brightness;
+    }
+
+    return converted_image;
+}
+
+image_t imageHSBtoRGB(image_HSB_t image_HSB)
+{
+    int image_size = image_HSB.image_width * image_HSB.image_height;
+
+    image_t converted_image;
+    converted_image.raw_image = (unsigned char *) malloc( 3 * image_size * sizeof(unsigned char) );
+    converted_image.image_width = image_HSB.image_width;
+    converted_image.image_height = image_HSB.image_height;
+    converted_image.num_components = 3;
+    converted_image.jpeg_color_space = JCS_RGB;
+
+    int component;
+    for(component = 0; component < image_size; component++){
+
+        int r = 0, g = 0, b = 0;
+        float hue = image_HSB.raw_image[3*component+0];
+        float saturation = image_HSB.raw_image[3*component+1];
+        float brightness = image_HSB.raw_image[3*component+2];
+
+        if(saturation == 0) {
+            r = g = b = (int) (brightness * 255.0f + 0.5f);
+        }else{
+            float h = (hue - (float)floor(hue)) * 6.0f;
+            float f = h - (float)floor(h);
+            float p = brightness * (1.0f - saturation);
+            float q = brightness * (1.0f - saturation * f);
+            float t = brightness * (1.0f - (saturation * (1.0f - f)));
+            switch ((int) h) {
+                case 0:
+                    r = (int) (brightness * 255.0f + 0.5f);
+                    g = (int) (t * 255.0f + 0.5f);
+                    b = (int) (p * 255.0f + 0.5f);
+                    break;
+                case 1:
+                     r = (int) (q * 255.0f + 0.5f);
+                     g = (int) (brightness * 255.0f + 0.5f);
+                     b = (int) (p * 255.0f + 0.5f);
+                     break;
+                case 2:
+                     r = (int) (p * 255.0f + 0.5f);
+                     g = (int) (brightness * 255.0f + 0.5f);
+                     b = (int) (t * 255.0f + 0.5f);
+                     break;
+                case 3:
+                     r = (int) (p * 255.0f + 0.5f);
+                     g = (int) (q * 255.0f + 0.5f);
+                     b = (int) (brightness * 255.0f + 0.5f);
+                     break;
+                case 4:
+                     r = (int) (t * 255.0f + 0.5f);
+                     g = (int) (p * 255.0f + 0.5f);
+                     b = (int) (brightness * 255.0f + 0.5f);
+                     break;
+                case 5:
+                     r = (int) (brightness * 255.0f + 0.5f);
+                     g = (int) (p * 255.0f + 0.5f);
+                     b = (int) (q * 255.0f + 0.5f);
+                     break;
+            }
+        }
+
+        converted_image.raw_image[3*component+0] = r;
+        converted_image.raw_image[3*component+1] = g;
+        converted_image.raw_image[3*component+2] = b;
+    }
+
+    return converted_image;
+}
+
 image_t img;
 image_t original;
 
@@ -180,6 +310,8 @@ void idleF(){}
 
 void keyboardF(unsigned char key, int mouseX, int mouseY)
 {
+    image_HSB_t converted;
+
     switch(key)
     {
         case 'p': case 'P':
@@ -212,6 +344,15 @@ void keyboardF(unsigned char key, int mouseX, int mouseY)
             imageGreyscale(img);
             glutPostRedisplay();
             break;
+        case 'h':
+            imageAdjustContrast(img, 24);
+            imageAdd(img, 1.25, 1.25, 0.9);
+            converted = imageRGBtoHSB(img);
+            free(img.raw_image);
+            img = imageHSBtoRGB(converted);
+            free(converted.raw_image);
+            glutPostRedisplay();
+            break;
     }
 }
 
@@ -220,6 +361,7 @@ int main(int argc, char *argv[])
     glutInit(&argc, argv);
 
     img = read_JPEG_file(argv[1]);
+    img.jpeg_color_space = JCS_RGB;
     original = read_JPEG_file(argv[1]);
 
     printf( "JPEG File Information: \n" );
