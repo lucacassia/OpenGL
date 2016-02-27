@@ -15,96 +15,94 @@ typedef struct{
 image_t read_JPEG_file( char *filename )
 {
 
-	struct jpeg_decompress_struct cinfo;
-	struct jpeg_error_mgr jerr;
+    struct jpeg_decompress_struct cinfo;
+    struct jpeg_error_mgr jerr;
 
-	JSAMPROW row_pointer[1];
-	
-	FILE *infile = fopen( filename, "rb" );
-	unsigned long location = 0;
-	int i;
+    JSAMPROW row_pointer[1];
+    
+    FILE *infile = fopen( filename, "rb" );
+    unsigned long location = 0;
+    int i;
 
     image_t tmp = {NULL,0,0,0,0};
-	
-	if ( !infile )
-	{
-		printf("Error opening jpeg file %s\n!", filename );
-		return tmp;
-	}
 
-	cinfo.err = jpeg_std_error( &jerr );
+    if( !infile ){
+        printf("Error opening jpeg file %s\n!", filename );
+        return tmp;
+    }
 
-	jpeg_create_decompress( &cinfo );
+    cinfo.err = jpeg_std_error( &jerr );
 
-	jpeg_stdio_src( &cinfo, infile );
+    jpeg_create_decompress( &cinfo );
 
-	jpeg_read_header( &cinfo, TRUE );
+    jpeg_stdio_src( &cinfo, infile );
+
+    jpeg_read_header( &cinfo, TRUE );
 
     tmp.image_width = cinfo.image_width;
     tmp.image_height = cinfo.image_height;
     tmp.num_components = cinfo.num_components;
     tmp.jpeg_color_space = cinfo.jpeg_color_space;
 
-	jpeg_start_decompress( &cinfo );
+    jpeg_start_decompress( &cinfo );
 
-	tmp.raw_image = (unsigned char *) malloc( cinfo.output_width * cinfo.output_height * cinfo.num_components * sizeof(unsigned char) );
+    tmp.raw_image = (unsigned char *) malloc( cinfo.output_width * cinfo.output_height * cinfo.num_components * sizeof(unsigned char) );
 
-	row_pointer[0] = (unsigned char *) malloc( cinfo.output_width * cinfo.num_components );
+    row_pointer[0] = (unsigned char *) malloc( cinfo.output_width * cinfo.num_components );
 
-	while( cinfo.output_scanline < cinfo.image_height )
-	{
-		jpeg_read_scanlines( &cinfo, row_pointer, 1 );
-		for( i = 0; i < cinfo.image_width * cinfo.num_components; i++)
-			tmp.raw_image[location++] = row_pointer[0][i];
-	}
+    while( cinfo.output_scanline < cinfo.image_height )
+    {
+        jpeg_read_scanlines( &cinfo, row_pointer, 1 );
+        for( i = 0; i < cinfo.image_width * cinfo.num_components; i++)
+            tmp.raw_image[location++] = row_pointer[0][i];
+    }
 
-	jpeg_finish_decompress( &cinfo );
-	jpeg_destroy_decompress( &cinfo );
-	free( row_pointer[0] );
-	fclose( infile );
+    jpeg_finish_decompress( &cinfo );
+    jpeg_destroy_decompress( &cinfo );
+    free( row_pointer[0] );
+    fclose( infile );
 
-	return tmp;
+    return tmp;
 }
 
 int write_JPEG_file( image_t obj, char *filename )
 {
-	struct jpeg_compress_struct cinfo;
-	struct jpeg_error_mgr jerr;
-	
-	JSAMPROW row_pointer[1];
+    struct jpeg_compress_struct cinfo;
+    struct jpeg_error_mgr jerr;
+    
+    JSAMPROW row_pointer[1];
 
-	FILE * outfile = fopen( filename, "wb" );
-	
-	if ( !outfile )
-	{
-		printf("Error opening output jpeg file %s\n!", filename );
-		return 1;
-	}
+    FILE * outfile = fopen( filename, "wb" );
+    
+    if( !outfile ){
+        printf("Error opening output jpeg file %s\n!", filename );
+        return 1;
+    }
 
-	cinfo.err = jpeg_std_error( &jerr );
-	jpeg_create_compress(&cinfo);
-	jpeg_stdio_dest(&cinfo, outfile);
+    cinfo.err = jpeg_std_error( &jerr );
+    jpeg_create_compress(&cinfo);
+    jpeg_stdio_dest(&cinfo, outfile);
 
-	cinfo.image_width = obj.image_width;	
-	cinfo.image_height = obj.image_height;
-	cinfo.input_components = obj.num_components;
-	cinfo.in_color_space = JCS_RGB;
+    cinfo.image_width = obj.image_width;    
+    cinfo.image_height = obj.image_height;
+    cinfo.input_components = obj.num_components;
+    cinfo.in_color_space = JCS_RGB;
 
-	jpeg_set_defaults( &cinfo );
+    jpeg_set_defaults( &cinfo );
 
-	jpeg_start_compress( &cinfo, TRUE );
+    jpeg_start_compress( &cinfo, TRUE );
 
-	while( cinfo.next_scanline < cinfo.image_height )
-	{
-		row_pointer[0] = &obj.raw_image[ cinfo.next_scanline * cinfo.image_width * cinfo.input_components];
-		jpeg_write_scanlines( &cinfo, row_pointer, 1 );
-	}
+    while( cinfo.next_scanline < cinfo.image_height )
+    {
+        row_pointer[0] = &obj.raw_image[ cinfo.next_scanline * cinfo.image_width * cinfo.input_components];
+        jpeg_write_scanlines( &cinfo, row_pointer, 1 );
+    }
 
-	jpeg_finish_compress( &cinfo );
-	jpeg_destroy_compress( &cinfo );
-	fclose( outfile );
+    jpeg_finish_compress( &cinfo );
+    jpeg_destroy_compress( &cinfo );
+    fclose( outfile );
 
-	return 0;
+    return 0;
 }
 
 unsigned char truncate_color(float c)
@@ -185,7 +183,7 @@ void keyboardF(unsigned char key, int mouseX, int mouseY)
     switch(key)
     {
         case 'p': case 'P':
-	        write_JPEG_file(img, "out.jpg" );
+            write_JPEG_file(img, "out.jpg" );
             break;
         case 'q': case 'Q': case 27:
             free(img.raw_image);
@@ -224,11 +222,11 @@ int main(int argc, char *argv[])
     img = read_JPEG_file(argv[1]);
     original = read_JPEG_file(argv[1]);
 
-	printf( "JPEG File Information: \n" );
-	printf( "Image width: %d pixels\n", img.image_width );
-	printf( "Image height: %d pixels\n", img.image_height );
-	printf( "Color components per pixel: %d.\n", img.num_components );
-	printf( "Color space: %d.\n", img.jpeg_color_space );
+    printf( "JPEG File Information: \n" );
+    printf( "Image width: %d pixels\n", img.image_width );
+    printf( "Image height: %d pixels\n", img.image_height );
+    printf( "Color components per pixel: %d.\n", img.num_components );
+    printf( "Color space: %d.\n", img.jpeg_color_space );
 
     glutInitWindowSize(2 * img.image_width, img.image_height); 
     glutInitDisplayMode( GLUT_RGB | GLUT_DOUBLE );
