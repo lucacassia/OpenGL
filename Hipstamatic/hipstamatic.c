@@ -159,6 +159,17 @@ void imageAdd(image_t image, float r, float g, float b)
     }
 }
 
+void imageInvert(image_t image)
+{
+    int i;
+    int buffer_size = image.image_width * image.image_height * image.num_components;
+    for(i = 0; i < buffer_size; i++){
+        if(i%3 == 0) image.raw_image[i] = 255 - image.raw_image[i];
+        if(i%3 == 1) image.raw_image[i] = 255 - image.raw_image[i];
+        if(i%3 == 2) image.raw_image[i] = 255 - image.raw_image[i];
+    }
+}
+
 image_HSB_t imageRGBtoHSB(image_t image)
 {
     image_HSB_t converted_image;
@@ -342,6 +353,10 @@ void keyboardF(unsigned char key, int mouseX, int mouseY)
             break;
         case 'g':
             imageGreyscale(img);
+            glutPostRedisplay();
+            break;
+        case 'i':
+            imageInvert(img);
             glutPostRedisplay();
             break;
         case 'h':
