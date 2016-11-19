@@ -2,7 +2,7 @@
 #include<iostream>
 #include<cstdlib>
 #include<climits>
-#include"lib/Timer.h"
+#include"../lib/Timer.h"
 #include<fftw3.h>
 
 int main(int argc, char *argv[]){

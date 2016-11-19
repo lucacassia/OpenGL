@@ -5,7 +5,7 @@
 #include<fftw3.h>
 #include<cmath>
 
-#include"../lib/wav.h"
+#include"../lib/wave.h"
 
 #define sign(x) (( x > 0 ) - ( x < 0 ))
 

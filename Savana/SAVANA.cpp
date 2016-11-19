@@ -1,5 +1,6 @@
 #include<GL/glut.h>
 #include<ctime>
+#include<unistd.h>
 #include"animalList.h"
 
 #define _WW 1000
@@ -13,7 +14,7 @@ animalList* Predator;
 
 void init()
 {
-	Prey=new animalList("prey",20,_WW,_WH,1);
+	Prey=new animalList("prey",200,_WW,_WH,1);
 	Predator=new animalList("predator",10,_WW,_WH,2,150);
 }
 
