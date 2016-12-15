@@ -6,6 +6,7 @@
 
 Julia julia;
 float phi[] = {0,0,0};
+float factor = 1.0;
 
 void savePPM()
 {
@@ -35,9 +36,9 @@ void displayF()
     if(data == NULL)
         std::cout<<"\n\nmalloc fail!!!\n\n";
     for(unsigned int k=0;k<julia.W()*julia.H();k++){
-        data[3*k+0] = sin(julia.pixels[k]*PI/100+phi[0]);
-        data[3*k+1] = sin(julia.pixels[k]*PI/100+phi[1]+PI/3);
-        data[3*k+2] = sin(julia.pixels[k]*PI/100+phi[2]+2*PI/3);
+        data[3*k+0] = sin(factor * julia.pixels[k]*PI/100+phi[0]);
+        data[3*k+1] = sin(factor * julia.pixels[k]*PI/100+phi[1]+PI/3);
+        data[3*k+2] = sin(factor * julia.pixels[k]*PI/100+phi[2]+2*PI/3);
     }
     glRasterPos2i(0,0);
     glDrawPixels(julia.W(),julia.H(),GL_RGB,GL_FLOAT,data);
@@ -103,6 +104,12 @@ void keyboardF(unsigned char key, int mouseX, int mouseY)
             phi[0]-=0.1;
             phi[1]-=0.1;
             phi[2]-=0.1;
+            break;
+        case 'f':
+            factor+=0.01;
+            break;
+        case 'F':
+            factor-=0.01;
             break;
     }
 }

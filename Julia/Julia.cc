@@ -3,10 +3,10 @@
 
 Julia::Julia()
 {
-    c.real = 0.3;
+    c.real = 0.5;
     c.imag = 0.3;
     resetView();
-    div = 2;
+    div = 3;
     jexp = 2;
     halt = 512;
     mode = 1;
@@ -43,25 +43,29 @@ Julia Julia::operator --(int)
 
 void Julia::left()
 {
-    focus.real-=shift;
+//    focus.real-=shift;
+    c.real /= 1.01;
     compute();
 }
 
 void Julia::right()
 {
-    focus.real+=shift;
+//    focus.real+=shift;
+    c.real *= 1.01;
     compute();
 }
 
 void Julia::up()
 {
-    focus.imag+=shift;
+//    focus.imag+=shift;
+    c.imag *= 1.01;
     compute();
 }
 
 void Julia::down()
 {
-    focus.imag-=shift;
+//    focus.imag-=shift;
+    c.imag /= 1.01;
     compute();
 }
 
