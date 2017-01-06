@@ -12,8 +12,8 @@ static const complex_t COMPLEX_ONE = {.re = 1.0, .im = 0.0};
 static const complex_t COMPLEX_I = {.re = 0.0, .im = 1.0};
 
 /*
-* a=b*c (a,b,c complex)
-*/
+ * a=b*c (a,b,c complex)
+ */
 
 #define _complex_mul(a,b,c) \
    (a).re=((b).re*(c).re-(b).im*(c).im); \
@@ -21,8 +21,8 @@ static const complex_t COMPLEX_I = {.re = 0.0, .im = 1.0};
 
 
 /*
-* a=b+c (a,b,c complex)
-*/
+ * a=b+c (a,b,c complex)
+ */
 
 #define _complex_add(a,b,c) \
    (a).re=((b).re+(c).re); \
@@ -30,8 +30,8 @@ static const complex_t COMPLEX_I = {.re = 0.0, .im = 1.0};
 
 
 /*
-* a=b-c (a,b,c complex)
-*/
+ * a=b-c (a,b,c complex)
+ */
 
 #define _complex_sub(a,b,c) \
    (a).re=((b).re-(c).re); \
@@ -39,8 +39,8 @@ static const complex_t COMPLEX_I = {.re = 0.0, .im = 1.0};
 
 
 /*
-* a=b/c (a,b,c complex)
-*/
+ * a=b/c (a,b,c complex)
+ */
 
 #define _complex_div(a,b,c) \
    (a).re=(((b).re*(c).re+(b).im*(c).im)/((c).re*(c).re+(c).im*(c).im)); \
@@ -48,24 +48,24 @@ static const complex_t COMPLEX_I = {.re = 0.0, .im = 1.0};
 
 
 /*
-* mod(a) (a complex)
-*/
+ * mod(a) (a complex)
+ */
 
 #define _complex_mod(a) \
    hypot((a).re,(a).im)
 
 
 /*
-* arg(a) (a complex)
-*/
+ * arg(a) (a complex)
+ */
 
 #define _complex_arg(a) \
    atan2((a).im,(a).re)
 
 
 /*
-* a=sin(b) (a,b complex)
-*/
+ * a=sin(b) (a,b complex)
+ */
 
 #define _complex_sin(a,b) \
    (a).re=(exp(-(b).im)*sin((b).re)-exp((b).im)*sin(-(b).re))/2; \
@@ -73,8 +73,8 @@ static const complex_t COMPLEX_I = {.re = 0.0, .im = 1.0};
 
 
 /*
-* a=cos(b) (a,b complex)
-*/
+ * a=cos(b) (a,b complex)
+ */
 
 #define _complex_cos(a,b) \
    (a).re=(exp(-(b).im)*cos((b).re)+exp((b).im)*cos(-(b).re))/2; \
@@ -82,8 +82,8 @@ static const complex_t COMPLEX_I = {.re = 0.0, .im = 1.0};
 
 
 /*
-* a=exp(b) (a,b complex)
-*/
+ * a=exp(b) (a,b complex)
+ */
 
 #define _complex_exp(a,b) \
    (a).re=exp((b).re)*cos((b).im); \
