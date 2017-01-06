@@ -34,6 +34,10 @@ class Julia{
     void right();
     void up();
     void down();
+    void w();
+    void a();
+    void s();
+    void d();
     void resetView();
     void updateSize(int,int);
     unsigned innerLoop(int,int);

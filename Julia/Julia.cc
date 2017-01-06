@@ -3,13 +3,13 @@
 
 Julia::Julia()
 {
-    c.real = 0.5;
+    c.real = 0.3;
     c.imag = 0.3;
     resetView();
     div = 3;
     jexp = 2;
     halt = 512;
-    mode = 1;
+    mode = 2;
     updateSize(600,600);
 }
 
@@ -43,31 +43,52 @@ Julia Julia::operator --(int)
 
 void Julia::left()
 {
-//    focus.real-=shift;
-    c.real /= 1.01;
+    focus.real-=shift;
     compute();
 }
 
 void Julia::right()
 {
-//    focus.real+=shift;
-    c.real *= 1.01;
+    focus.real+=shift;
     compute();
 }
 
 void Julia::up()
 {
-//    focus.imag+=shift;
-    c.imag *= 1.01;
+    focus.imag+=shift;
     compute();
 }
 
 void Julia::down()
 {
-//    focus.imag-=shift;
+    focus.imag-=shift;
+    compute();
+}
+
+void Julia::a()
+{
+    c.real /= 1.01;
+    compute();
+}
+
+void Julia::d()
+{
+    c.real *= 1.01;
+    compute();
+}
+
+void Julia::w()
+{
+    c.imag *= 1.01;
+    compute();
+}
+
+void Julia::s()
+{
     c.imag /= 1.01;
     compute();
 }
+
 
 void Julia::resetView()
 {
@@ -110,6 +131,6 @@ void Julia::compute()
         pixels[n]=innerLoop(n/width,n%width);
     }
     timer.stop();
-    std::cout<<timer.getElapsedTime()<<std::endl;
+    std::cout<<timer.getElapsedTime()<< " c: " << c.real << "," << c.imag << std::endl;
 }
 

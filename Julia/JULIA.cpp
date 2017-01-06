@@ -111,6 +111,19 @@ void keyboardF(unsigned char key, int mouseX, int mouseY)
         case 'F':
             factor-=0.01;
             break;
+
+        case 'w':
+            julia.w();
+            break;
+        case 'a':
+            julia.a();
+            break;
+        case 's':
+            julia.s();
+            break;
+        case 'd':
+            julia.d();
+            break;
     }
 }
 
