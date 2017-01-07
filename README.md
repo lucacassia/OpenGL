@@ -14,10 +14,9 @@ Make sure to install these first.
 ---
 
 ## Screenshots
-![Alt text](/img/Screenshot1.png?raw=true "Optional Title")
-![Image](<http://i.imgur.com/I6wq1cC.png>)
-![Image](<http://i.imgur.com/12EqlpL.png>)
-![Image](<http://i.imgur.com/Lx0acQz.jpg>)
+![Image](/img/Screenshot1.png?raw=true "Julia 1")
+![Image](/img/Screenshot2.png?raw=true "Julia 2")
+![Image](/img/Screenshot3.png?raw=true "Julia 3")
 
 ### Compile
 Once you installed all dependencies you need to compile and run the applications: 
