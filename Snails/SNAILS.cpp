@@ -1,5 +1,6 @@
 #include"../lib/point.h"
 #include<cstdlib>
+#include<unistd.h>
 #include<GL/glut.h>
 
 #define _WW 600
