@@ -32,9 +32,9 @@ void displayF()
     unsigned int k;
     for( k = 0; k < width * height; k++ )
     {
-        data[3*k+0] = sin( factor * pixels[k] * PI / 100 + colorPhase[0] );
-        data[3*k+1] = sin( factor * pixels[k] * PI / 100 + colorPhase[1] + PI / 3 );
-        data[3*k+2] = sin( factor * pixels[k] * PI / 100 + colorPhase[2] + 2 * PI / 3 );
+        data[3*k+0] = sin( intensity * pixels[k] * PI / 100 + colorPhase[0] );
+        data[3*k+1] = sin( intensity * pixels[k] * PI / 100 + colorPhase[1] + PI / 3 );
+        data[3*k+2] = sin( intensity * pixels[k] * PI / 100 + colorPhase[2] + 2 * PI / 3 );
     }
     glRasterPos2i( 0, 0 );
     glDrawPixels( width, height, GL_RGB, GL_FLOAT, data );
@@ -49,40 +49,50 @@ void keyboardF( unsigned char key, int mouseX, int mouseY )
 
     switch( key )
     {
-        case 'p': case 'P':
-            savePPM();
-            break;
-        case 'q': case 'Q': case 27:
-            clear();
-            exit( EXIT_SUCCESS );
-
         case 'r': colorPhase[0] += 0.1; break;
+        case 'R': colorPhase[0] -= 0.1; break;
+
         case 'g': colorPhase[1] += 0.1; break;
+        case 'G': colorPhase[1] -= 0.1; break;
+
         case 'b': colorPhase[2] += 0.1; break;
+        case 'B': colorPhase[2] -= 0.1; break;
+
         case 'c': colorPhase[0] += 0.1;
                   colorPhase[1] += 0.1;
                   colorPhase[2] += 0.1; break;
-        case 'R': colorPhase[0] -= 0.1; break;
-        case 'G': colorPhase[1] -= 0.1; break;
-        case 'B': colorPhase[2] -= 0.1; break;
         case 'C': colorPhase[0] -= 0.1;
                   colorPhase[1] -= 0.1;
                   colorPhase[2] -= 0.1; break;
-        case 'f': factor += 0.01; break;
-        case 'F': factor -= 0.01; break;
 
-        case '+': flagCompute = 1; zoom *= 2; shift /= 2; break;
-        case '-': flagCompute = 1; zoom /= 2; shift *= 2; break;
-        case 'w': flagCompute = 1; c.im *= 1.01; break;
-        case 'a': flagCompute = 1; c.re /= 1.01; break;
-        case 's': flagCompute = 1; c.im /= 1.01; break;
-        case 'd': flagCompute = 1; c.re *= 1.01; break;
+        case 'i': intensity += 0.01; break;
+        case 'I': intensity -= 0.01; break;
+
+        case '=': case '+': flagCompute = 1; zoom *= 2; shift /= 2; break;
+        case '-': case '_': flagCompute = 1; zoom /= 2; shift *= 2; break;
+
+        case 'w': case 'W': flagCompute = 1; c.im *= 1.01; break;
+        case 'a': case 'A': flagCompute = 1; c.re /= 1.01; break;
+        case 's': case 'S': flagCompute = 1; c.im /= 1.01; break;
+        case 'd': case 'D': flagCompute = 1; c.re *= 1.01; break;
 
         case ',': flagCompute = 1; divergence += 1; break;
         case '.': flagCompute = 1; halt += 1; break;
         case 'j': flagCompute = 1; jexp *= 1.1; break;
 
         case ' ': flagCompute = 1; resetView(); break;
+
+        case 'f': case 'F':
+            glutFullScreenToggle();
+            glClear( GL_COLOR_BUFFER_BIT );
+            break;
+
+        case 'p': case 'P':
+            savePPM();
+            break;
+        case 'q': case 'Q': case 27:
+            clear();
+            exit( EXIT_SUCCESS );
     }
 
     if ( flagCompute ) compute();

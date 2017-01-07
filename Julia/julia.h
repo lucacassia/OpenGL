@@ -1,10 +1,11 @@
 #include "complex_t.h"
 #include <stdlib.h>
 
-/* modes Norm = 0
- *       Conj = 1
- *        Abs = 2
- *       Iabs = 3
+/* Modes:
+ *   Norm = 0
+ *   Conj = 1
+ *    Abs = 2
+ *   Iabs = 3
  */
 
     complex_t c;
@@ -19,7 +20,7 @@
     int height;
     unsigned int* pixels;
     float colorPhase[3];
-    float factor;
+    float intensity;
 
 unsigned int innerLoop(int i, int j)
 {
@@ -44,7 +45,9 @@ unsigned int innerLoop(int i, int j)
             z.im = fabs(z.im);
         }
 
-    /*  z = c + z ^ jexp */
+/*
+ *      z = c + z ^ jexp
+ */
 
         tmp.re = pow( _complex_mod(z), jexp );
         tmp.im = _complex_arg(z) * jexp;
@@ -69,7 +72,7 @@ void resetView()
     colorPhase[0] = 0;
     colorPhase[1] = 0;
     colorPhase[2] = 0;
-    factor = 1.0;
+    intensity = 1.0;
     focus.re = -c.re;
     focus.im =  c.im;
     zoom = 256;
