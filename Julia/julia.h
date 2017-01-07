@@ -1,4 +1,4 @@
-#include"../lib/complex_t.h"
+#include "complex_t.h"
 #include <stdlib.h>
 
 /* modes Norm = 0
