@@ -18,6 +18,8 @@
     int width;
     int height;
     unsigned int* pixels;
+    float colorPhase[3];
+    float factor;
 
 unsigned int innerLoop(int i, int j)
 {
@@ -64,6 +66,10 @@ void compute()
 
 void resetView()
 {
+    colorPhase[0] = 0;
+    colorPhase[1] = 0;
+    colorPhase[2] = 0;
+    factor = 1.0;
     focus.re = -c.re;
     focus.im =  c.im;
     zoom = 256;
@@ -97,67 +103,5 @@ void init()
     halt = 100;
     mode = 1;
     updateSize(600,600);
-}
-
-void zoomIn()
-{
-    zoom *= 2;
-    shift /= 2;
-    compute();
-}
-
-void zoomOut()
-{
-    zoom /= 2;
-    shift *= 2;
-    compute();
-}
-
-void moveLeft()
-{
-    focus.re -= shift;
-    compute();
-}
-
-void moveRight()
-{
-    focus.re += shift;
-    compute();
-}
-
-void moveUp()
-{
-    focus.im += shift;
-    compute();
-}
-
-void moveDown()
-{
-    focus.im -= shift;
-    compute();
-}
-
-void a()
-{
-    c.re /= 1.01;
-    compute();
-}
-
-void d()
-{
-    c.re *= 1.01;
-    compute();
-}
-
-void w()
-{
-    c.im *= 1.01;
-    compute();
-}
-
-void s()
-{
-    c.im /= 1.01;
-    compute();
 }
 
