@@ -1,5 +1,4 @@
 #include "sheet.h"
-#include "../lib/complex.h"
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
@@ -12,10 +11,6 @@ sheet::sheet(int w,int h)
     pixels.resize(w*h);
     source.resize(w*h,0);
     for(int n=0;n<w*h;n++){
-//        double x=(n%w-w/2)/sqrt(w*h),y=(n/w-h/2)/sqrt(w*h);
-//        pixels[n] = tanc(newComplex(1,0)/newComplex(x,y)).Mod();
-//        if(pixels[n]!=pixels[n])pixels[n]=0;
-//        source[n] = sqrt(x*x+y*y);
         pixels[n] = rand()*1.0/RAND_MAX;
     }
     old=pixels;
