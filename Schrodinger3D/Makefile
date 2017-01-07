@@ -19,7 +19,7 @@ all: rmxeq mkdep mkxeq rmpmk
 
 # main programs and required modules 
 
-MAIN = graph
+MAIN = Schrodinger3D
 
 MODULES = shader_utils
 
