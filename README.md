@@ -14,6 +14,7 @@ Make sure to install these first.
 ---
 
 ## Screenshots
+![Alt text](/img/Screenshot1.png?raw=true "Optional Title")
 ![Image](<http://i.imgur.com/I6wq1cC.png>)
 ![Image](<http://i.imgur.com/12EqlpL.png>)
 ![Image](<http://i.imgur.com/Lx0acQz.jpg>)

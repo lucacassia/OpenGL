@@ -76,7 +76,7 @@ void resetView()
     focus.re = -c.re;
     focus.im =  c.im;
     zoom = 256;
-    shift = 0.5;
+    shift = 0.25;
 }
 
 void clear()
@@ -98,13 +98,13 @@ void updateSize(int w, int h)
 void init()
 {
     pixels = NULL;
-    c.re = 1.0;
+    c.re = 0.3;
     c.im = 0.3;
     resetView();
     divergence = 5;
-    jexp = 6;
+    jexp = 2;
     halt = 100;
     mode = 1;
-    updateSize(600,600);
+    updateSize(1024,768);
 }
 
