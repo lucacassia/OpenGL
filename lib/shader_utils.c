@@ -75,16 +75,16 @@ GLuint create_shader(const char* filename, GLenum type)
   }
   GLuint res = glCreateShader(type);
   const GLchar* sources[] = {
-    // Define GLSL version
+  /* Define GLSL version */
 #ifdef GL_ES_VERSION_2_0
     "#version 100\n"
 #else
     "#version 120\n"
 #endif
     ,
-    // GLES2 precision specifiers
+    /* GLES2 precision specifiers */
 #ifdef GL_ES_VERSION_2_0
-    // Define default float precision for fragment shaders:
+    /* Define default float precision for fragment shaders: */
     (type == GL_FRAGMENT_SHADER) ?
     "#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
     "precision highp float;           \n"
@@ -92,10 +92,10 @@ GLuint create_shader(const char* filename, GLenum type)
     "precision mediump float;         \n"
     "#endif                           \n"
     : ""
-    // Note: OpenGL ES automatically defines this:
-    // #define GL_ES
+    /* Note: OpenGL ES automatically defines this: */
+    /* #define GL_ES */
 #else
-    // Ignore GLES 2 precision specifiers:
+    /* Ignore GLES 2 precision specifiers: */
     "#define lowp   \n"
     "#define mediump\n"
     "#define highp  \n"

@@ -6,7 +6,6 @@
 #include "shader_utils.h"
 #include "distribution.h"
 
-//#define PIPE
 #define PI 3.141592653589793238462643383279502884197169399375105820974944592308
 #define N 256
 
@@ -70,7 +69,6 @@ void savePPM(unsigned char *frame)
 void setupTexture()
 {
     int i,j,x,y;
-    // Create our datapoints, store it as bytes
     for(i = 0; i < N; i++) {
         for(j = 0; j < N; j++) {
             double z = 0;
@@ -89,21 +87,20 @@ void setupTexture()
         }
     }
 
-    /* Upload the texture with our datapoints */
     glBindTexture(GL_TEXTURE_2D, texture_id);
     glTexImage2D(
-        GL_TEXTURE_2D,        // target
-        0,                    // level, 0 = base, no minimap,
-        GL_LUMINANCE,         // internalformat
-        N,                    // width
-        N,                    // height
-        0,                    // border, always 0 in OpenGL ES
-        GL_LUMINANCE,         // format
-        GL_UNSIGNED_BYTE,     // type
+        GL_TEXTURE_2D,
+        0,
+        GL_LUMINANCE,
+        N,
+        N,
+        0,
+        GL_LUMINANCE,
+        GL_UNSIGNED_BYTE,
         graph
     );
 
-    // Create an array for (grid+1) * (grid+1) vertices
+    /* Create an array for (grid+1) * (grid+1) vertices */
     struct point vertices[(grid+1)][(grid+1)];
 
     for(i = 0; i < (grid+1); i++) {
@@ -113,11 +110,11 @@ void setupTexture()
         }
     }
 
-    // Tell OpenGL to copy our array to the buffer objects
+    /* Tell OpenGL to copy our array to the buffer objects */
     glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
     glBufferData(GL_ARRAY_BUFFER, sizeof vertices, vertices, GL_STATIC_DRAW);
 
-    // Create an array of indices into the vertex array that traces both horizontal and vertical lines
+    /* Create an array of indices into the vertex array that traces both horizontal and vertical lines */
     GLushort indices[grid * (grid+1) * 6];
 
     for(i = y = 0; y < grid; y++) {
@@ -137,7 +134,7 @@ void setupTexture()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, grid * (grid+1) * 4 * sizeof *indices, indices, GL_STATIC_DRAW);
 
-    // Create another array of indices that describes all the triangles needed to create a completely filled surface
+    /* Create another array of indices that describes all the triangles needed to create a completely filled surface */
     for(i = y = 0; y < (grid+1); y++) {
         for(x = 0; x < grid; x++) {
             indices[i++] = y * (grid+1) + x;
@@ -210,10 +207,10 @@ int init_resources()
         return 0;
     }
 
-    // Generate texture name
+    /* Generate texture name */
     glActiveTexture(GL_TEXTURE0);
     glGenTextures(1, &texture_id);
-    // Create two vertex buffer objects
+    /* Create two vertex buffer objects */
     glGenBuffers(3, vbo);
 
     setupTexture();
@@ -247,10 +244,10 @@ void display()
     glUseProgram(program);
     glUniform1i(uniform_mytexture, 0);
 
-    /*Transformations*/
+    /* Transformations */
     GLfloat texture_transform[16], vertex_transform[16];
 
-    /*set vertex transformations*/
+    /* Set vertex transformations */
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
     glLoadIdentity();
@@ -267,7 +264,7 @@ void display()
     glUniformMatrix4fv(uniform_vertex_transform, 1, GL_FALSE, vertex_transform);
     glPopMatrix();
 
-    /*set texture transformations*/
+    /* Set texture transformations */
     glMatrixMode(GL_TEXTURE);
     glPushMatrix();
     glLoadIdentity();
@@ -286,7 +283,7 @@ void display()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, interpolate ? GL_LINEAR : GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, interpolate ? GL_LINEAR : GL_NEAREST);
 
-    /* Draw the triangles, a little dark, with a slight offset in depth. */
+    /* Draw the triangles, a little dark, with a slight offset in depth */
     GLfloat grey[4] = {0.5, 0.5, 0.5, 1};
     glUniform4fv(uniform_color, 1, grey);
 
