@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include "../lib/color.h"
+#include "color.h"
 
 double DIFFUSION = 0.5f;
 

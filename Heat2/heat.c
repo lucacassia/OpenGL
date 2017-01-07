@@ -1,5 +1,5 @@
 #include "heat.h"
-#include "../lib/color.h"
+#include "color.h"
 
 #include <GL/freeglut.h>
 
