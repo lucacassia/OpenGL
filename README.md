@@ -1,6 +1,7 @@
 # OpenGL projects
 
 ## Description
+...
 
 ## Dependencies
 Make sure to install these first.
@@ -34,6 +35,4 @@ make
 # Have fun!
 ./julia
 ```
-## Donations
-I made this projects for fun in my spare time. If you enjoying them and you want to buy me a beer click [here](https://megadoro.github.io/) .
 
