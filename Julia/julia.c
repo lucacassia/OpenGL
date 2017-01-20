@@ -71,6 +71,9 @@ void keyboardF( unsigned char key, int mouseX, int mouseY )
         case '=': case '+': flagCompute = 1; zoom *= 2; shift /= 2; break;
         case '-': case '_': flagCompute = 1; zoom /= 2; shift *= 2; break;
 
+        case 'm': flagCompute = 1; mode = (mode+1)%4; break;
+        case 'M': flagCompute = 1; mode = (4+mode-1)%4; break;
+
         case 'w': case 'W': flagCompute = 1; c.im *= 1.01; break;
         case 'a': case 'A': flagCompute = 1; c.re /= 1.01; break;
         case 's': case 'S': flagCompute = 1; c.im /= 1.01; break;

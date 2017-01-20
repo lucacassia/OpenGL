@@ -25,10 +25,13 @@
 unsigned int innerLoop(int i, int j)
 {
     unsigned int k;
-    complex_t z, tmp;
+    complex_t z, c1, tmp;
 
-    z.re = focus.re + ( j + ( 1 - width ) / 2 ) / zoom;
-    z.im = focus.im + ( i + ( 1 - height) / 2 ) / zoom;
+    z.re = 0.0;
+    z.im = 0.0;
+
+    c1.re = focus.re + ( j + ( 1 - width ) / 2 ) / zoom;
+    c1.im = focus.im + ( i + ( 1 - height) / 2 ) / zoom;
 
     for ( k = 0; ( k < halt ) * ( _complex_mod(z) < divergence ); k++ )
     {
@@ -40,10 +43,7 @@ unsigned int innerLoop(int i, int j)
             z.im = fabs(z.im);
         }
         if ( mode == 3 )
-        {
-            z.re = z.re;
             z.im = fabs(z.im);
-        }
 
 /*
  *      z = c + z ^ jexp
@@ -52,8 +52,15 @@ unsigned int innerLoop(int i, int j)
         tmp.re = pow( _complex_mod(z), jexp );
         tmp.im = _complex_arg(z) * jexp;
 
-        z.re = c.re + tmp.re * cos( tmp.im );
-        z.im = c.im + tmp.re * sin( tmp.im );
+        z.re = c1.re + tmp.re * cos( tmp.im );
+        z.im = c1.im + tmp.re * sin( tmp.im );
+/*
+        tmp.re = z.re;
+        tmp.im = z.im;
+
+        z.re = c.re * exp(tmp.re)*cos(tmp.im) - c.im * exp(tmp.re)*sin(tmp.im);
+        z.im = c.re * exp(tmp.re)*sin(tmp.im) + c.im * exp(tmp.re)*cos(tmp.im);
+*/
     }
 
     return k;
@@ -73,8 +80,8 @@ void resetView()
     colorPhase[1] = 0;
     colorPhase[2] = 0;
     intensity = 1.0;
-    focus.re = -c.re;
-    focus.im =  c.im;
+    focus.re = 0;
+    focus.im = 0;
     zoom = 256;
     shift = 0.25;
 }
@@ -98,13 +105,13 @@ void updateSize(int w, int h)
 void init()
 {
     pixels = NULL;
-    c.re = 0.3;
-    c.im = 0.3;
+    c.re = 0.0;
+    c.im = 0.0;
     resetView();
-    divergence = 5;
+    divergence = 1000000000;
     jexp = 2;
     halt = 100;
-    mode = 1;
+    mode = 0;
     updateSize(1024,768);
 }
 
