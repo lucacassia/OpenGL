@@ -33,7 +33,7 @@ unsigned int innerLoop(int i, int j)
     c1.re = focus.re + ( j + ( 1 - width ) / 2 ) / zoom;
     c1.im = focus.im + ( i + ( 1 - height) / 2 ) / zoom;
 
-    for ( k = 0; ( k < halt ) * ( _complex_mod(z) < divergence ); k++ )
+    for ( k = 0; ( k < halt ) && ( _complex_mod(z) < divergence ); k++ )
     {
         if ( mode == 1 )
             z.im = -z.im;

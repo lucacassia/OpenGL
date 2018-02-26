@@ -58,7 +58,7 @@ void reshapeF(int w,int h)
     glLoadIdentity();
     gluOrtho2D(-w*a/h+b.x,w*a/h+b.x,-a+b.y,a+b.y);
     glClear(GL_COLOR_BUFFER_BIT);
-    glClearColor(0.0,0.0,0.2,0.0);
+    glClearColor(5/255.,48/255.,97/255.,0.0);
 }
 
 void init(unsigned n)
