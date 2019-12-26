@@ -3,7 +3,7 @@
 
 #include <math.h>
 
-#define dt (1e-3)
+#define dt (1e-2)
 
 double chaotic(double x,double v,double t){
     return -sin(x)-0.3*v+1.4*cos(2*t/3);
@@ -23,6 +23,18 @@ double lorenz_y(double x,double y,double z){
 
 double lorenz_z(double x,double y,double z){
     return x*y-8*z/3;
+}
+
+double thomas_x(double x,double y,double z){
+    return sin(y)-0.208186*x;
+}
+
+double thomas_y(double x,double y,double z){
+    return sin(z)-0.208186*y;
+}
+
+double thomas_z(double x,double y,double z){
+    return sin(x)-0.208186*z;
 }
 
 typedef struct _plist{
@@ -59,7 +71,7 @@ void plist_erase(plist **head){
         free(tmp);
     }
 }
-#define LORENZ
+#define THOMAS
 void plist_evolve_ode(plist **head_ptr, plist **tail_ptr){
     double x = 0, y = 0, z = 0, k1, k2, k3, k4;
 #ifdef CHAOTIC
@@ -95,6 +107,25 @@ void plist_evolve_ode(plist **head_ptr, plist **tail_ptr){
     k2 = lorenz_z((*head_ptr)->x,(*head_ptr)->y,(*head_ptr)->z)*dt;
     k3 = lorenz_z((*head_ptr)->x,(*head_ptr)->y,(*head_ptr)->z)*dt;
     k4 = lorenz_z((*head_ptr)->x,(*head_ptr)->y,(*head_ptr)->z+k3)*dt;
+    z = (*head_ptr)->z + k1/6+k2/3+k3/3+k4/6;
+#endif
+#ifdef THOMAS
+    k1 = thomas_x((*head_ptr)->x,(*head_ptr)->y,(*head_ptr)->z)*dt;
+    k2 = thomas_x((*head_ptr)->x+k1/2,(*head_ptr)->y,(*head_ptr)->z)*dt;
+    k3 = thomas_x((*head_ptr)->x+k2/2,(*head_ptr)->y,(*head_ptr)->z)*dt;
+    k4 = thomas_x((*head_ptr)->x+k3,(*head_ptr)->y,(*head_ptr)->z)*dt;
+    x = (*head_ptr)->x + k1/6+k2/3+k3/3+k4/6;
+
+    k1 = thomas_y((*head_ptr)->x,(*head_ptr)->y,(*head_ptr)->z)*dt;
+    k2 = thomas_y((*head_ptr)->x,(*head_ptr)->y+k1/2,(*head_ptr)->z)*dt;
+    k3 = thomas_y((*head_ptr)->x,(*head_ptr)->y+k2/2,(*head_ptr)->z)*dt;
+    k4 = thomas_y((*head_ptr)->x,(*head_ptr)->y+k3,(*head_ptr)->z)*dt;
+    y = (*head_ptr)->y + k1/6+k2/3+k3/3+k4/6;
+
+    k1 = thomas_z((*head_ptr)->x,(*head_ptr)->y,(*head_ptr)->z)*dt;
+    k2 = thomas_z((*head_ptr)->x,(*head_ptr)->y,(*head_ptr)->z)*dt;
+    k3 = thomas_z((*head_ptr)->x,(*head_ptr)->y,(*head_ptr)->z)*dt;
+    k4 = thomas_z((*head_ptr)->x,(*head_ptr)->y,(*head_ptr)->z+k3)*dt;
     z = (*head_ptr)->z + k1/6+k2/3+k3/3+k4/6;
 #endif
     plist_add_front(head_ptr, x, y, z, (*head_ptr)->t+dt);
